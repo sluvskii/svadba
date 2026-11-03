@@ -1,48 +1,14 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { enhance } from '$app/forms';
 	import { content } from '#lib/content.js';
 	import { i18n, pick, setLang } from '#lib/i18n.svelte.js';
 	import Monogram from '#lib/components/Monogram.svelte';
 	import Ornament from '#lib/components/Ornament.svelte';
+	import type { PageProps } from './$types';
 
-	type Match = { token: string; name: string };
+	let { form }: PageProps = $props();
 
-	let query = $state('');
-	let results = $state<Match[]>([]);
-	let searching = $state(false);
-	let searched = $state(false);
-
-	let debounceTimer: ReturnType<typeof setTimeout> | undefined;
-
-	async function search() {
-		const q = query.trim();
-		if (q.length < 2) {
-			results = [];
-			searched = false;
-			return;
-		}
-		searching = true;
-		try {
-			const res = await fetch(`/api/guests-search?q=${encodeURIComponent(q)}`);
-			const data = (await res.json()) as { results?: Match[] };
-			results = data.results ?? [];
-			searched = true;
-		} catch {
-			results = [];
-			searched = true;
-		} finally {
-			searching = false;
-		}
-	}
-
-	function onInput() {
-		clearTimeout(debounceTimer);
-		debounceTimer = setTimeout(search, 300);
-	}
-
-	function openInvite(token: string) {
-		goto(`/invite/${token}`);
-	}
+	let submitting = $state(false);
 </script>
 
 <div class="find">
@@ -77,37 +43,36 @@
 			<Ornament variant="divider" class="find__divider" />
 			<p class="lead find__intro">{pick(content.rsvp.find.intro)}</p>
 
-			<div class="find__search">
+			<form
+				class="find__form"
+				method="POST"
+				use:enhance={() => {
+					submitting = true;
+					return async ({ update }) => {
+						await update();
+						submitting = false;
+					};
+				}}
+			>
 				<input
 					class="input find__input"
 					type="text"
-					bind:value={query}
-					oninput={onInput}
+					name="name"
 					placeholder={pick(content.rsvp.find.placeholder)}
 					autocomplete="off"
 					aria-label={pick(content.rsvp.find.placeholder)}
+					required
 				/>
-				{#if searching}
-					<p class="tiny muted find__status">{pick(content.rsvp.find.searching)}</p>
-				{/if}
+				<button class="btn find__submit" type="submit" disabled={submitting}>
+					{submitting ? '...' : pick(content.rsvp.button)}
+				</button>
+			</form>
 
-				{#if results.length > 0}
-					<ul class="find__results">
-						{#each results as match (match.token)}
-							<li>
-								<button class="find__match" type="button" onclick={() => openInvite(match.token)}>
-									<span>{match.name}</span>
-									<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-										<path d="M1 8h13M9 3l5 5-5 5" stroke="currentColor" stroke-width="1.1" />
-									</svg>
-								</button>
-							</li>
-						{/each}
-					</ul>
-				{:else if searched && !searching}
-					<p class="tiny muted find__notfound">{pick(content.rsvp.find.notFound)}</p>
-				{/if}
-			</div>
+			{#if form?.ambiguous}
+				<p class="find__error" role="alert">{pick(content.rsvp.find.ambiguous)}</p>
+			{:else if form?.notFound}
+				<p class="find__error" role="alert">{pick(content.rsvp.find.notFound)}</p>
+			{/if}
 
 			<p class="tiny muted find__foot">{pick(content.rsvp.note)}</p>
 		</section>
@@ -220,8 +185,11 @@
 		margin: 0 auto;
 	}
 
-	.find__search {
+	.find__form {
 		margin-top: 28px;
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
 	}
 
 	.find__input {
@@ -230,52 +198,20 @@
 		font-size: 16px;
 	}
 
-	.find__status {
-		margin-top: 12px;
-	}
-
-	.find__results {
-		list-style: none;
-		margin: 16px 0 0;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-		text-align: left;
-	}
-
-	.find__match {
-		appearance: none;
+	.find__submit {
 		width: 100%;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-		padding: 14px 18px;
-		background: var(--paper);
-		border: 1px solid var(--line);
-		border-radius: 12px;
-		font-family: var(--serif);
-		font-size: 1.15rem;
-		color: var(--ink);
-		cursor: pointer;
-		transition: border-color 0.2s var(--ease), transform 0.2s var(--ease);
 	}
 
-	.find__match:hover {
-		border-color: var(--brass);
-		transform: translateY(-1px);
-	}
-
-	.find__match svg {
-		width: 14px;
-		height: 14px;
-		color: var(--brass);
-		flex: 0 0 auto;
-	}
-
-	.find__notfound {
-		margin-top: 16px;
+	.find__error {
+		margin: 18px auto 0;
+		max-width: 44ch;
+		padding: 12px 16px;
+		border: 1px solid #f8b4b4;
+		border-radius: 10px;
+		background: #fff5f5;
+		color: #9b1c1c;
+		font-size: 13px;
+		line-height: 1.6;
 	}
 
 	.find__foot {
