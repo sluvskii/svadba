@@ -1,0 +1,677 @@
+<script lang="ts">
+	import { content, ui, type Table } from '#lib/content.js';
+	import { pick } from '#lib/i18n.svelte.js';
+	import Monogram from './Monogram.svelte';
+	import Ornament from './Ornament.svelte';
+	import Reveal from './Reveal.svelte';
+
+	type Props = {
+		tables?: Table[];
+		visible?: boolean;
+	};
+
+	let { tables = content.seating.tables, visible = true }: Props = $props();
+
+	type GuestRow = {
+		name: string;
+		table: Table;
+	};
+
+	const currentTables = $derived(tables && tables.length ? tables : content.seating.tables);
+
+	const allGuests: GuestRow[] = $derived(
+		currentTables.flatMap((table) =>
+			table.guests.map((name) => ({ name, table }))
+		)
+	);
+
+	let query = $state('');
+	let selectedId = $state<number | null>(null);
+
+	const normalizedQuery = $derived(query.trim().toLowerCase());
+	const matches = $derived(
+		normalizedQuery.length >= 2
+			? allGuests.filter((guest) => guest.name.toLowerCase().includes(normalizedQuery))
+			: []
+	);
+	const selectedTable = $derived(
+		currentTables.find((table) => table.id === selectedId) ?? null
+	);
+
+	function selectTable(id: number) {
+		selectedId = id;
+	}
+
+	function clearSearch() {
+		query = '';
+		selectedId = null;
+	}
+</script>
+
+<section class="section seating" id="seating">
+	<div class="shell">
+		<div class="seating__head">
+			<Reveal>
+				<p class="eyebrow">{pick(content.seating.eyebrow)}</p>
+				<h2 class="display seating__title">{pick(content.seating.title)}</h2>
+			</Reveal>
+			<Reveal delay={100}>
+				<p class="lead seating__intro">{pick(content.seating.intro)}</p>
+			</Reveal>
+		</div>
+
+		{#if visible}
+			<Reveal delay={80}>
+				<div class="seating__search">
+					<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+						<circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.2" />
+						<path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="1.2" />
+					</svg>
+					<input
+						type="search"
+						value={query}
+						oninput={(event) => {
+							query = event.currentTarget.value;
+							selectedId = null;
+						}}
+						placeholder={pick(content.seating.searchPlaceholder)}
+						aria-label={pick(content.seating.searchPlaceholder)}
+						autocomplete="off"
+					/>
+					{#if query}
+						<button class="seating__clear" type="button" onclick={clearSearch} aria-label="Очистить">
+							<svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true">
+								<path d="M3 3l14 14M17 3L3 17" stroke="currentColor" stroke-width="1.2" />
+							</svg>
+						</button>
+					{/if}
+				</div>
+			</Reveal>
+
+			<div class="seating__body">
+				<Reveal kind="left" delay={100} class="seating__plan-wrap">
+					<div class="plan" aria-label="Схема зала">
+						<div class="plan__topline">
+							<span class="tiny muted">{pick(content.details.venue)}</span>
+							<span class="tiny muted">17 · 12 · 2026</span>
+						</div>
+
+						<div class="plan__stage">{pick(content.seating.stage)}</div>
+
+						<div class="plan__couple">
+							<Monogram size={28} />
+							<span>{pick(content.seating.coupleTable)}</span>
+						</div>
+
+						<div class="plan__dance">
+							<span>{pick(content.seating.danceFloor)}</span>
+						</div>
+
+						{#each currentTables as table (table.id)}
+							<button
+								type="button"
+								class="plan__table"
+								class:is-active={selectedId === table.id}
+								style={`left: ${table.x}%; top: ${table.y}%;`}
+								onclick={() => selectTable(table.id)}
+								aria-label={`${pick(table.name)} — ${table.guests.length} ${pick(content.seating.guestsLabel)}`}
+								aria-pressed={selectedId === table.id}
+							>
+								<span class="plan__table-num">{table.id}</span>
+								<span class="plan__table-count">{table.guests.length}</span>
+							</button>
+						{/each}
+
+						<div class="plan__entrance">
+							<span class="plan__entrance-line"></span>
+							<span>{pick(content.seating.entrance)}</span>
+						</div>
+					</div>
+				</Reveal>
+
+				<Reveal kind="right" delay={140} class="seating__panel">
+					<div class="panel__head">
+						<span class="tiny muted">{pick(content.seating.eyebrow)}</span>
+						<Ornament variant="divider" class="panel__ornament" />
+					</div>
+
+					<div class="panel__body" aria-live="polite">
+						{#if normalizedQuery.length >= 2}
+							{#if matches.length}
+								<p class="panel__label">
+									{matches.length === 1 ? pick(content.seating.yourTable) : 'Найдено'}
+								</p>
+								<div class="panel__results">
+									{#each matches.slice(0, 8) as guest (guest.name + guest.table.id)}
+										<button
+											class="result"
+											type="button"
+											class:is-active={selectedId === guest.table.id}
+											onclick={() => selectTable(guest.table.id)}
+										>
+											<span class="result__name">{guest.name}</span>
+											<span class="result__table">
+												{pick(content.seating.tableLabel)} {guest.table.id}
+											</span>
+										</button>
+									{/each}
+								</div>
+							{:else}
+								<p class="panel__hint">{pick(content.seating.notFound)}</p>
+							{/if}
+						{:else if !selectedTable}
+							<p class="panel__hint">{pick(content.seating.searchHint)}</p>
+							<p class="panel__subhint">
+								{pick(content.seating.intro)}
+							</p>
+						{/if}
+
+						{#if selectedTable}
+							<div class="panel__table">
+								<div class="panel__table-head">
+									<div>
+										<p class="panel__label">{pick(content.seating.tableLabel)}</p>
+										<h3 class="panel__table-name">{selectedTable.id}</h3>
+									</div>
+									<span class="panel__count">
+										{selectedTable.guests.length}
+										{pick(content.seating.guestsLabel)}
+									</span>
+								</div>
+								<div class="panel__guests">
+									{#each selectedTable.guests as guest (guest)}
+										<span class="guest-chip">{guest}</span>
+									{/each}
+								</div>
+							</div>
+						{/if}
+					</div>
+				</Reveal>
+			</div>
+		{:else}
+			<Reveal delay={80}>
+				<div class="seating__soon">
+					<Ornament variant="divider" class="seating__soon-ornament" />
+					<p class="lead seating__soon-text">{pick(content.seating.comingSoon)}</p>
+					<p class="tiny muted seating__soon-sub">{pick(ui.invite.seatNote)}</p>
+				</div>
+			</Reveal>
+		{/if}
+	</div>
+</section>
+
+<style>
+	.seating {
+		background: var(--paper-2);
+	}
+
+	.seating__head {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr);
+		align-items: end;
+		gap: 40px;
+		margin-bottom: clamp(34px, 5vw, 54px);
+	}
+
+	.seating__title {
+		max-width: 15ch;
+		margin-top: 20px;
+		font-size: clamp(42px, 5vw, 72px);
+	}
+
+	.seating__intro {
+		max-width: 40ch;
+		padding-bottom: 6px;
+	}
+
+	.seating__search {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		max-width: 560px;
+		min-height: 58px;
+		padding: 0 18px;
+		border: 1px solid var(--line-strong);
+		background: var(--paper);
+		transition: border-color 0.25s var(--ease);
+	}
+
+	.seating__search:focus-within {
+		border-color: var(--pine);
+	}
+
+	.seating__search svg {
+		width: 19px;
+		height: 19px;
+		color: var(--ink-faint);
+		flex: 0 0 auto;
+	}
+
+	.seating__search input {
+		width: 100%;
+		min-width: 0;
+		border: 0;
+		background: transparent;
+		font-size: 15px;
+	}
+
+	.seating__search input:focus {
+		outline: none;
+	}
+
+	.seating__search input::placeholder {
+		color: var(--ink-faint);
+	}
+
+	.seating__clear {
+		display: grid;
+		place-items: center;
+		width: 32px;
+		height: 32px;
+		color: var(--ink-soft);
+		flex: 0 0 auto;
+	}
+
+	.seating__body {
+		display: grid;
+		grid-template-columns: minmax(0, 1.42fr) minmax(280px, 0.58fr);
+		gap: clamp(20px, 3vw, 38px);
+		align-items: stretch;
+		margin-top: 28px;
+	}
+
+	:global(.seating__plan-wrap) {
+		min-width: 0;
+	}
+
+	.plan {
+		position: relative;
+		width: 100%;
+		aspect-ratio: 1.36;
+		min-height: 430px;
+		border: 1px solid var(--line);
+		background: var(--paper);
+		overflow: hidden;
+	}
+
+	.plan::before {
+		content: '';
+		position: absolute;
+		inset: 12px;
+		border: 1px solid var(--line);
+		opacity: 0.55;
+		pointer-events: none;
+	}
+
+	.plan__topline {
+		position: absolute;
+		top: 22px;
+		left: 26px;
+		right: 26px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+	}
+
+	.plan__stage {
+		position: absolute;
+		top: 9%;
+		left: 50%;
+		transform: translateX(-50%);
+		display: grid;
+		place-items: center;
+		width: 22%;
+		height: 5.5%;
+		border: 1px solid var(--line);
+		font-size: 7px;
+		font-weight: 700;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		color: var(--ink-soft);
+	}
+
+	.plan__couple {
+		position: absolute;
+		top: 18%;
+		left: 50%;
+		transform: translateX(-50%);
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 8px 16px;
+		border: 1px solid var(--brass);
+		background: var(--paper-2);
+		color: var(--pine);
+		font-size: 8px;
+		font-weight: 650;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		white-space: nowrap;
+	}
+
+	.plan__dance {
+		position: absolute;
+		top: 53%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		display: grid;
+		place-items: center;
+		width: 30%;
+		aspect-ratio: 1;
+		border: 1px dashed var(--line-strong);
+		border-radius: 50%;
+		color: var(--ink-faint);
+	}
+
+	.plan__dance span {
+		font-size: 7px;
+		font-weight: 700;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+	}
+
+	.plan__table {
+		position: absolute;
+		display: grid;
+		place-items: center;
+		width: clamp(44px, 7.2vw, 66px);
+		aspect-ratio: 1;
+		border: 1px solid var(--line-strong);
+		border-radius: 50%;
+		background: var(--paper-2);
+		color: var(--ink);
+		transform: translate(-50%, -50%);
+		transition:
+			background-color 0.3s var(--ease),
+			border-color 0.3s var(--ease),
+			color 0.3s var(--ease),
+			transform 0.3s var(--ease);
+	}
+
+	.plan__table:hover {
+		transform: translate(-50%, -50%) scale(1.06);
+		border-color: var(--pine);
+	}
+
+	.plan__table.is-active {
+		background: var(--pine);
+		border-color: var(--pine);
+		color: var(--paper);
+	}
+
+	.plan__table-num {
+		font-family: var(--serif);
+		font-size: clamp(20px, 2.6vw, 28px);
+		line-height: 1;
+		transform: translateY(2px);
+	}
+
+	.plan__table-count {
+		position: absolute;
+		bottom: -7px;
+		display: grid;
+		place-items: center;
+		min-width: 20px;
+		height: 16px;
+		padding: 0 4px;
+		border: 1px solid var(--line);
+		background: var(--paper);
+		color: var(--ink-soft);
+		font-size: 7px;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		border-radius: 999px;
+	}
+
+	.plan__table.is-active .plan__table-count {
+		border-color: var(--brass);
+		color: var(--pine);
+	}
+
+	.plan__entrance {
+		position: absolute;
+		left: 50%;
+		bottom: 2.6%;
+		transform: translateX(-50%);
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		font-size: 7px;
+		font-weight: 700;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		color: var(--ink-faint);
+	}
+
+	.plan__entrance-line {
+		width: 26px;
+		height: 1px;
+		background: var(--line-strong);
+	}
+
+	:global(.seating__panel) {
+		display: flex;
+		flex-direction: column;
+		padding: 22px;
+		border: 1px solid var(--line);
+		background: var(--paper);
+	}
+
+	.panel__head {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		padding-bottom: 18px;
+		border-bottom: 1px solid var(--line);
+	}
+
+	:global(.panel__ornament) {
+		width: 80px;
+		color: var(--brass);
+	}
+
+	.panel__body {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+		padding-top: 20px;
+		flex: 1;
+	}
+
+	.panel__label {
+		font-size: 8px;
+		font-weight: 700;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		color: var(--brass);
+	}
+
+	.panel__hint {
+		font-family: var(--serif);
+		font-size: 22px;
+		line-height: 1.25;
+		color: var(--ink);
+	}
+
+	.panel__subhint {
+		font-size: 12px;
+		line-height: 1.65;
+		color: var(--ink-soft);
+	}
+
+	.panel__results {
+		display: flex;
+		flex-direction: column;
+		border-top: 1px solid var(--line);
+	}
+
+	.result {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		padding: 13px 0;
+		border-bottom: 1px solid var(--line);
+		text-align: left;
+		transition: color 0.25s var(--ease);
+	}
+
+	.result:hover,
+	.result.is-active {
+		color: var(--pine);
+	}
+
+	.result__name {
+		font-size: 15px;
+		font-weight: 600;
+	}
+
+	.result__table {
+		font-size: 8px;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--ink-faint);
+		white-space: nowrap;
+	}
+
+	.panel__table {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+		margin-top: auto;
+		padding-top: 20px;
+		border-top: 1px solid var(--line);
+	}
+
+	.panel__table-head {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 16px;
+	}
+
+	.panel__table-name {
+		font-family: var(--serif);
+		font-size: 54px;
+		font-weight: 400;
+		line-height: 0.9;
+		color: var(--pine);
+	}
+
+	.panel__count {
+		font-size: 9px;
+		font-weight: 650;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--ink-soft);
+		white-space: nowrap;
+	}
+
+	.panel__guests {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+	}
+
+	.guest-chip {
+		padding: 5px 9px;
+		border: 1px solid var(--line);
+		font-size: 11px;
+		line-height: 1.4;
+		color: var(--ink-soft);
+	}
+
+	@media (max-width: 980px) {
+		.seating__body {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		:global(.seating__panel) {
+			min-height: 240px;
+		}
+	}
+
+	@media (max-width: 800px) {
+		.seating__head {
+			grid-template-columns: minmax(0, 1fr);
+			gap: 18px;
+			align-items: start;
+		}
+	}
+
+	@media (max-width: 620px) {
+		.plan {
+			aspect-ratio: 0.96;
+			min-height: 390px;
+		}
+
+		.plan__table {
+			width: 43px;
+		}
+
+		.plan__table-num {
+			font-size: 19px;
+		}
+
+		.plan__topline {
+			top: 18px;
+			left: 18px;
+			right: 18px;
+		}
+
+		.plan__couple {
+			top: 17%;
+			padding: 6px 10px;
+			font-size: 7px;
+		}
+
+		.plan__couple :global(.monogram) {
+			display: none;
+		}
+
+		.plan__dance {
+			width: 27%;
+		}
+
+		.plan__stage {
+			width: 30%;
+		}
+
+		:global(.seating__panel) {
+			padding: 18px;
+		}
+	}
+
+	.seating__soon {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		padding: 50px 24px;
+		background: var(--paper);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-lg, 12px);
+		max-width: 600px;
+		margin: 20px auto 0;
+	}
+
+	:global(.seating__soon-ornament) {
+		width: 140px;
+		color: var(--brass);
+		margin-bottom: 16px;
+	}
+
+	.seating__soon-text {
+		color: var(--ink);
+		font-size: 1.15rem;
+		margin: 0 0 10px 0;
+	}
+
+	.seating__soon-sub {
+		color: var(--ink-muted);
+		margin: 0;
+	}
+</style>

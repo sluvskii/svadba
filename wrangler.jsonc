@@ -1,0 +1,36 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "svadba",
+	"compatibility_date": "2026-11-03",
+	"compatibility_flags": [
+		"nodejs_als"
+	],
+	"main": ".svelte-kit/cloudflare/_worker.js",
+	"assets": {
+		"binding": "ASSETS",
+		"directory": ".svelte-kit/cloudflare"
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "svadba-db",
+			"database_id": "eedf4ef7-4822-41e9-bd7c-4a800e9b67bf",
+			"migrations_dir": "migrations"
+		}
+	],
+	"kv_namespaces": [
+		{
+			"binding": "IMAGES",
+			"id": "7d92bd84a568412faf71d3dd12dcb92f"
+		}
+	],
+	"vars": {
+		// Необязательно: Telegram-данные обычно вводят через /admin/settings (хранятся в D1).
+		// Заданные здесь переменные имеют приоритет. Секреты лучше задавать через
+		// `npx wrangler secret put TELEGRAM_BOT_TOKEN`, а не в открытом виде здесь.
+		"TELEGRAM_BOT_TOKEN": "",
+		"TELEGRAM_CHAT_ID": ""
+	},
+	"workers_dev": true,
+	"preview_urls": true
+}
