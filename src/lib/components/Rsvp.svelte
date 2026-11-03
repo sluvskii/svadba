@@ -33,6 +33,10 @@
 					{pick(content.rsvp.intro)}
 				</p>
 
+				<a class="btn rsvp__button" href="/rsvp">
+					{pick(content.rsvp.button)}
+				</a>
+
 				<div class="rsvp__card-foot">
 					<Ornament variant="divider" class="rsvp__ornament" />
 					<p class="tiny muted">{pick(content.rsvp.note)}</p>
@@ -144,6 +148,11 @@
 		font-size: 12px;
 		line-height: 1.7;
 		color: var(--ink-soft);
+	}
+
+	.rsvp__button {
+		margin-top: 28px;
+		width: 100%;
 	}
 
 	.rsvp__card-foot {
