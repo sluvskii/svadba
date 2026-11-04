@@ -39,7 +39,22 @@
 	const isYes = $derived(attendance === 'yes');
 
 	function toggleDrink(id: string) {
-		drinks = drinks.includes(id) ? drinks.filter((d) => d !== id) : [...drinks, id];
+		if (id === 'none') {
+			if (drinks.includes('none')) {
+				drinks = drinks.filter((d) => d !== 'none');
+			} else {
+				// При выборе «Не пью алкоголь» снимаем алкогольные напитки
+				drinks = drinks.filter((d) => !drinkOptions.find((o) => o.id === d)?.alcohol);
+				drinks = [...drinks, 'none'];
+			}
+		} else {
+			const opt = drinkOptions.find((o) => o.id === id);
+			if (opt?.alcohol) {
+				// При выборе алкогольного напитка снимаем отметку «Не пью алкоголь»
+				drinks = drinks.filter((d) => d !== 'none');
+			}
+			drinks = drinks.includes(id) ? drinks.filter((d) => d !== id) : [...drinks, id];
+		}
 	}
 
 	function submit() {
@@ -247,11 +262,26 @@
 
 	.rsvp-form__check {
 		display: flex;
-		align-items: flex-start;
-		gap: 12px;
+		align-items: center;
+		gap: 16px;
+		padding: 16px 20px;
+		border: 1px solid rgba(29, 51, 42, 0.12);
+		border-radius: 14px;
+		background: rgba(29, 51, 42, 0.02);
 		cursor: pointer;
 		font-size: 13px;
 		line-height: 1.5;
+		transition: all 0.25s var(--ease);
+	}
+
+	.rsvp-form__check:hover {
+		border-color: var(--brass);
+		background: rgba(180, 154, 99, 0.05);
+	}
+
+	.rsvp-form__check:has(input:checked) {
+		border-color: var(--brass);
+		background: rgba(180, 154, 99, 0.08);
 	}
 
 	.rsvp-form__check input {
@@ -288,6 +318,15 @@
 
 	.rsvp-form__submit {
 		width: 100%;
+		min-height: 54px;
+		border-radius: 14px;
+		box-shadow: 0 12px 28px -10px rgba(29, 51, 42, 0.4);
+		transition: all 0.25s var(--ease);
+	}
+
+	.rsvp-form__submit:hover:not([disabled]) {
+		transform: translateY(-2px);
+		box-shadow: 0 16px 36px -10px rgba(29, 51, 42, 0.5);
 	}
 
 	.rsvp-form__submit[disabled] {

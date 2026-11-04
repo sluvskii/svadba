@@ -16,8 +16,6 @@
 </script>
 
 <div class="invite">
-	<div class="invite__frame" aria-hidden="true"></div>
-
 	<header class="invite__header">
 		<a class="invite__brand" href="/">
 			<Monogram size={30} />
@@ -104,22 +102,6 @@
 			var(--paper);
 		color: var(--ink);
 		overflow-x: clip;
-	}
-
-	/* Декоративная рамка листа приглашения */
-	.invite__frame {
-		position: fixed;
-		inset: 12px;
-		border: 1px solid var(--line-strong);
-		pointer-events: none;
-		z-index: 2;
-	}
-
-	.invite__frame::after {
-		content: '';
-		position: absolute;
-		inset: 5px;
-		border: 1px solid var(--line);
 	}
 
 	/* Шапка */
@@ -268,10 +250,12 @@
 		max-width: 640px;
 		margin: clamp(30px, 5vh, 52px) auto 0;
 		padding: clamp(26px, 4.5vw, 48px);
-		background: rgba(255, 253, 248, 0.92);
-		border: 1px solid var(--line);
-		border-radius: 22px;
-		box-shadow: 0 30px 70px -46px rgba(29, 51, 42, 0.4);
+		background: #ffffff;
+		border: 1px solid rgba(29, 51, 42, 0.08);
+		border-radius: 24px;
+		box-shadow:
+			0 24px 60px -30px rgba(29, 51, 42, 0.18),
+			0 4px 16px rgba(29, 51, 42, 0.03);
 	}
 
 	.invite__form-title {
@@ -337,17 +321,13 @@
 	}
 
 	@media (max-width: 640px) {
-		.invite__frame {
-			inset: 8px;
-		}
-
 		.invite__header {
 			padding: 22px 24px 0;
 		}
 
 		.invite__table-card,
 		.invite__form-card {
-			border-radius: 16px;
+			border-radius: 18px;
 		}
 	}
 </style>
