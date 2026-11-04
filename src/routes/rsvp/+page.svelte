@@ -35,6 +35,8 @@
 
 <svelte:head>
 	<title>{pick(content.rsvp.openForm.title)} — {pick(content.footer.names)}</title>
+	<meta property="og:title" content="{pick(content.rsvp.openForm.title)} — {pick(content.footer.names)}" />
+	<meta property="og:description" content={pick(content.rsvp.openForm.intro)} />
 </svelte:head>
 
 <div class="rsvp-page">

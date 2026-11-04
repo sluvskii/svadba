@@ -126,6 +126,22 @@ async function sendTelegramMessage(
 		});
 		const result = (await res.json()) as any;
 		if (!result.ok) {
+			// Если Telegram отклонил из-за спецсимволов в разметке имени/комментария гостя, отправляем чистым текстом
+			if (typeof result.description === 'string' && /parse|entities|markdown/i.test(result.description)) {
+				const retryRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						chat_id: chatId,
+						text: text.replace(/[*_`\[\]]/g, ''),
+						disable_web_page_preview: true
+					})
+				});
+				const retryResult = (await retryRes.json()) as any;
+				if (retryResult.ok) {
+					return { ok: true };
+				}
+			}
 			return { ok: false, error: result.description || 'Ошибка Telegram API' };
 		}
 		return { ok: true };

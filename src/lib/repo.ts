@@ -482,9 +482,9 @@ export async function recordLoginFailure(
 		.prepare(
 			`INSERT INTO login_attempts (ip, count, window_start) VALUES (?, 1, datetime('now'))
 			 ON CONFLICT(ip) DO UPDATE SET
-			   count = CASE WHEN window_start > datetime('now', '${LOGIN_WINDOW_MINUTES} minutes')
+			   count = CASE WHEN window_start > datetime('now', '-${LOGIN_WINDOW_MINUTES} minutes')
 			                THEN count + 1 ELSE 1 END,
-			   window_start = CASE WHEN window_start > datetime('now', '${LOGIN_WINDOW_MINUTES} minutes')
+			   window_start = CASE WHEN window_start > datetime('now', '-${LOGIN_WINDOW_MINUTES} minutes')
 			                       THEN window_start ELSE datetime('now') END`
 		)
 		.bind(ip)

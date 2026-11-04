@@ -18,6 +18,18 @@
 	const timelineItems = $derived(content.timeline.items);
 </script>
 
+<svelte:head>
+	<title>{displayName} — {pick({ ru: 'Приглашение на свадьбу Алины и Камиля', tt: 'Алинә белән Камил туена чакыру' })}</title>
+	<meta property="og:title" content="{displayName} — {pick({ ru: 'Приглашение на свадьбу', tt: 'Туйга чакыру' })}" />
+	<meta
+		property="og:description"
+		content={pick({
+			ru: 'Приглашаем вас разделить с нами самый тёплый зимний день. 17 декабря 2026, Нефтекамск.',
+			tt: 'Сезне иң җылы кышкы көнебезне бергә үткәрергә чакырабыз. 17 декабрь 2026, Нефтекама.'
+		})}
+	/>
+</svelte:head>
+
 <div class="invite">
 	<header class="invite__header">
 		<a class="invite__brand" href="/">
