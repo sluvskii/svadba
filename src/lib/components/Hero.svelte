@@ -80,13 +80,10 @@
 		<a class="hero__scroll" href="#invitation">
 			<span>{pick(content.hero.scroll)}</span>
 			<svg viewBox="0 0 18 28" fill="none" aria-hidden="true">
-				<path d="M9 1v24M2 18l7 8 7-8" stroke="currentColor" stroke-width="1" />
+				<path d="M9 1v24M2 18l7 8 7-8" stroke="currentColor" stroke-width="1.2" />
 			</svg>
 		</a>
 	</div>
-
-	<Ornament variant="corner" class="hero__corner hero__corner--tl" />
-	<Ornament variant="corner" class="hero__corner hero__corner--br" />
 </section>
 
 <style>
@@ -109,17 +106,19 @@
 
 	.hero__watermark {
 		position: absolute;
-		right: -0.06em;
-		bottom: -0.28em;
+		right: 3%;
+		top: 36%;
+		transform: translateY(-50%);
 		font-family: var(--serif);
-		font-size: clamp(320px, 50vw, 760px);
+		font-size: clamp(260px, 38vw, 620px);
 		font-weight: 300;
 		line-height: 0.7;
 		letter-spacing: -0.06em;
 		color: var(--ink);
-		opacity: 0.035;
+		opacity: 0.022;
 		pointer-events: none;
 		user-select: none;
+		z-index: 0;
 	}
 
 	.hero__inner {
@@ -288,66 +287,60 @@
 
 	.hero__bottom {
 		position: relative;
-		z-index: 1;
+		z-index: 2;
 		display: flex;
 		align-items: flex-end;
 		justify-content: space-between;
 		gap: 24px;
-		padding-block: 24px 30px;
+		padding-block: 28px 36px;
 		border-top: 1px solid var(--line);
 	}
 
 	.hero__scroll {
 		display: inline-flex;
 		align-items: center;
-		gap: 14px;
-		padding-bottom: 2px;
-		font-size: 8px;
+		gap: 12px;
+		padding: 12px 22px;
+		border-radius: var(--radius-pill);
+		background: rgba(255, 255, 255, 0.88);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+		border: 1px solid rgba(25, 30, 27, 0.08);
+		box-shadow: 0 4px 18px -2px rgba(25, 30, 27, 0.04);
+		font-size: 9px;
 		font-weight: 700;
-		letter-spacing: 0.22em;
+		letter-spacing: 0.2em;
 		text-transform: uppercase;
-		color: var(--ink-soft);
-		transition: color 0.25s var(--ease);
+		color: var(--ink);
+		transition:
+			transform 0.35s var(--ease),
+			box-shadow 0.35s var(--ease),
+			background-color 0.35s var(--ease),
+			border-color 0.35s var(--ease);
 	}
 
 	.hero__scroll:hover {
-		color: var(--ink);
+		transform: translateY(-2px);
+		background: #ffffff;
+		box-shadow: 0 10px 24px -4px rgba(25, 30, 27, 0.1);
+		border-color: rgba(27, 48, 37, 0.2);
 	}
 
 	.hero__scroll svg {
-		width: 12px;
-		height: 19px;
-		animation: scroll-nudge 2.8s var(--ease) infinite;
+		width: 13px;
+		height: 20px;
+		color: var(--pine);
+		animation: scroll-bob 2.2s ease-in-out infinite;
 	}
 
-	@keyframes scroll-nudge {
+	@keyframes scroll-bob {
 		0%,
 		100% {
 			transform: translateY(0);
 		}
 		50% {
-			transform: translateY(5px);
+			transform: translateY(4px);
 		}
-	}
-
-	:global(.hero__corner) {
-		position: absolute;
-		width: 54px;
-		height: 54px;
-		color: var(--brass);
-		opacity: 0.5;
-		pointer-events: none;
-	}
-
-	:global(.hero__corner--tl) {
-		top: 32px;
-		left: 32px;
-	}
-
-	:global(.hero__corner--br) {
-		right: 32px;
-		bottom: 32px;
-		transform: rotate(180deg);
 	}
 
 	@media (max-width: 1080px) {
@@ -382,10 +375,6 @@
 
 		.hero__frame {
 			inset: 9px;
-		}
-
-		:global(.hero__corner) {
-			display: none;
 		}
 
 		.hero__inner {

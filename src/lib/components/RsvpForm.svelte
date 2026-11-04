@@ -293,7 +293,7 @@
 	:global(.rsvp-form__success-flower) {
 		width: 30px;
 		height: 44px;
-		color: var(--brass);
+		color: var(--sage);
 	}
 
 	.rsvp-form__success-title {

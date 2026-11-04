@@ -484,7 +484,7 @@
 		font-weight: 700;
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
-		color: var(--brass);
+		color: var(--pine);
 	}
 
 	.panel__hint {
@@ -660,7 +660,7 @@
 
 	:global(.seating__soon-ornament) {
 		width: 140px;
-		color: var(--brass);
+		color: var(--sage);
 		margin-bottom: 16px;
 	}
 

@@ -1,11 +1,9 @@
 <script lang="ts">
 	import { content } from '#lib/content.js';
 	import { pick } from '#lib/i18n.svelte.js';
-	import Ornament from './Ornament.svelte';
 	import Reveal from './Reveal.svelte';
 
 	// Фотография ресторана загружается через админку (Тексты → Фото ресторана).
-	// Пока фото не загружено — показываем декоративную графику.
 	let photoOk = $state(true);
 
 	function addToCalendar() {
@@ -44,492 +42,415 @@
 	}
 </script>
 
-<section class="section section--pine details" id="details">
+<section class="section details" id="details">
 	<div class="shell">
-		<div class="details__grid">
-			<div class="details__when">
-				<Reveal>
-					<p class="eyebrow">{pick(content.details.eyebrow)}</p>
-				</Reveal>
+		<div class="details__header">
+			<Reveal>
+				<p class="eyebrow">{pick(content.details.eyebrow)}</p>
+				<h2 class="display details__title">Дата и место</h2>
+				<p class="lead details__subtitle">
+					Всё самое важное, чтобы вы могли спланировать праздничный день вместе с нами
+				</p>
+			</Reveal>
+		</div>
 
-				<Reveal delay={80}>
-					<div class="details__date">
+		<div class="details__grid">
+			<!-- Карточка: Дата и время -->
+			<Reveal delay={80} class="details__card-reveal">
+				<div class="details__card details__card--date">
+					<div class="details__card-top">
+						<span class="details__tag">
+							<svg viewBox="0 0 16 16" fill="none" class="details__tag-icon" aria-hidden="true">
+								<rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.2" />
+								<path d="M2 7h12M5 1v3M11 1v3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
+							</svg>
+							<span>{pick(content.details.weekday)}</span>
+						</span>
+					</div>
+
+					<div class="details__date-display">
 						<span class="details__day display">{content.wedding.day}</span>
-						<div class="details__date-side">
+						<div class="details__date-meta">
 							<span class="details__month">{pick(content.wedding.month)}</span>
 							<span class="details__year">{content.wedding.year}</span>
 						</div>
 					</div>
-				</Reveal>
 
-				<Reveal delay={140}>
-					<div class="details__meta">
-						<span>{pick(content.details.weekday)}</span>
-						<span class="details__meta-line" aria-hidden="true"></span>
-						<span>{content.details.time}</span>
+					<div class="details__time-pill">
+						<span class="details__time-dot" aria-hidden="true"></span>
+						<span class="details__time-text">
+							Сбор гостей в <strong>14:00</strong> · Церемония в <strong>14:20</strong>
+						</span>
 					</div>
-					<p class="details__note">{pick(content.details.note)}</p>
-				</Reveal>
-			</div>
 
-			<div class="details__where">
-				<Reveal delay={120}>
-					<Ornament variant="divider" class="details__ornament" />
-				</Reveal>
+					<p class="details__note">
+						{pick(content.details.note)}
+					</p>
 
-				<Reveal delay={180}>
-					<h2 class="display details__venue">{pick(content.details.venue)}</h2>
-					<p class="details__address">{pick(content.details.address)}</p>
-					<div class="details__links">
-						<a
-							class="link-line details__link-item"
-							href={content.wedding.mapUrl}
-							target="_blank"
-							rel="noreferrer"
-						>
-							<span>{pick(content.details.mapLabel)}</span>
-							<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-								<path d="M1 8h13M9 3l5 5-5 5" stroke="currentColor" stroke-width="1.1" />
+					<div class="details__action">
+						<button type="button" class="btn btn--outline details__btn" onclick={addToCalendar}>
+							<svg viewBox="0 0 16 16" fill="none" class="details__btn-icon" aria-hidden="true">
+								<rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.2" />
+								<path d="M2 7h12M5 1v3M11 1v3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
 							</svg>
-						</a>
-						<button
-							type="button"
-							class="link-line details__link-item details__calendar-btn"
-							onclick={addToCalendar}
-						>
 							<span>{pick(content.details.calendarAdd)}</span>
-							<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-								<rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.1" />
-								<path d="M2 7h12M5 1v3M11 1v3" stroke="currentColor" stroke-width="1.1" />
-							</svg>
 						</button>
 					</div>
-				</Reveal>
-
-				<Reveal delay={240}>
-					<div class="details__schedule">
-						{#each content.details.schedule as item (item.value + pick(item.label))}
-							<div class="details__schedule-item">
-								<span>{pick(item.label)}</span>
-								<strong>{item.value}</strong>
-							</div>
-						{/each}
-					</div>
-				</Reveal>
-			</div>
-		</div>
-
-		<Reveal delay={120}>
-			<a
-				class="details__map-card"
-				class:has-photo={photoOk}
-				href={content.wedding.mapUrl}
-				target="_blank"
-				rel="noreferrer"
-				aria-label={`${pick(content.details.venue)} — ${pick(content.details.mapLabel)}`}
-			>
-				{#if photoOk}
-					<img
-						class="details__map-photo"
-						src="/media/restaurant"
-						alt={pick(content.details.venue)}
-						loading="lazy"
-						onerror={() => (photoOk = false)}
-					/>
-				{/if}
-
-				<svg
-					class="details__map-art"
-					viewBox="0 0 1200 340"
-					preserveAspectRatio="none"
-					fill="none"
-					aria-hidden="true"
-				>
-					<g stroke="currentColor" stroke-width="1" opacity=".2">
-						<path d="M-20 74C140 48 260 96 410 72C560 48 700 10 860 40C1010 68 1110 60 1220 34" />
-						<path d="M-20 170C120 140 230 178 380 162C560 142 690 110 840 136C990 162 1110 150 1220 126" />
-						<path d="M-20 268C150 238 280 288 430 260C590 230 730 202 890 232C1020 256 1120 244 1220 220" />
-						<path d="M96 -20C120 80 86 160 110 250C122 302 116 340 108 380" />
-						<path d="M322 -20C300 70 340 150 318 240C306 292 320 330 338 380" />
-						<path d="M574 -20C596 70 560 160 586 250C600 300 590 340 576 380" />
-						<path d="M834 -20C810 80 850 160 826 250C814 300 830 340 846 380" />
-						<path d="M1068 -20C1090 80 1056 160 1082 250C1094 300 1088 340 1074 380" />
-					</g>
-					<g stroke="currentColor" stroke-width="1" opacity=".35">
-						<path d="M0 120H1200M0 222H1200" stroke-dasharray="2 8" />
-						<path d="M200 0V340M460 0V340M720 0V340M980 0V340" stroke-dasharray="2 8" />
-					</g>
-					<circle cx="586" cy="162" r="34" stroke="var(--brass)" stroke-width="1" opacity=".55" />
-					<circle cx="586" cy="162" r="8" fill="var(--brass)" />
-					<path d="M586 196V278" stroke="var(--brass)" stroke-width="1" stroke-dasharray="4 6" />
-				</svg>
-
-				<div class="details__map-info">
-					<span class="details__map-kicker">{pick(content.details.venueEyebrow)}</span>
-					<strong>{pick(content.details.venue)}</strong>
-					<span>{pick(content.details.address)}</span>
 				</div>
+			</Reveal>
 
-				<span class="details__map-action">
-					{pick(content.details.mapLabel)}
-					<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-						<path d="M1 8h13M9 3l5 5-5 5" stroke="currentColor" stroke-width="1.1" />
-					</svg>
-				</span>
-			</a>
-		</Reveal>
+			<!-- Карточка: Место торжества & Маршрут -->
+			<Reveal delay={140} class="details__card-reveal">
+				<div class="details__card details__card--venue">
+					<div class="details__card-top">
+						<span class="details__tag">
+							<svg viewBox="0 0 16 16" fill="none" class="details__tag-icon" aria-hidden="true">
+								<path d="M8 1.5C5.24 1.5 3 3.74 3 6.5c0 3.8 4.6 7.7 4.8 7.85.12.1.28.1.4 0 .2-.15 4.8-4.05 4.8-7.85 0-2.76-2.24-5-5-5zm0 7a2 2 0 110-4 2 2 0 010 4z" stroke="currentColor" stroke-width="1.2" />
+							</svg>
+							<span>{pick(content.details.venueEyebrow)}</span>
+						</span>
+					</div>
+
+					<h3 class="display details__venue-title">{pick(content.details.venue)}</h3>
+					<p class="details__address">{pick(content.details.address)}</p>
+
+					<!-- Интерактивное превью ресторана -->
+					<a
+						class="details__preview"
+						class:has-photo={photoOk}
+						href={content.wedding.mapUrl}
+						target="_blank"
+						rel="noreferrer"
+						aria-label={`${pick(content.details.venue)} на Яндекс.Картах`}
+					>
+						{#if photoOk}
+							<img
+								class="details__preview-img"
+								src="/media/restaurant"
+								alt={pick(content.details.venue)}
+								loading="lazy"
+								onerror={() => (photoOk = false)}
+							/>
+						{:else}
+							<div class="details__preview-empty">
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" class="details__preview-empty-icon" aria-hidden="true">
+									<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z" />
+								</svg>
+								<span>{pick(content.details.venue)}</span>
+							</div>
+						{/if}
+
+						<div class="details__preview-scrim">
+							<span class="details__preview-pill">
+								<span>{pick(content.details.mapLabel)}</span>
+								<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+									<path d="M2 8h11M8 3l5 5-5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+								</svg>
+							</span>
+						</div>
+					</a>
+
+					<div class="details__action">
+						<a class="btn details__btn" href={content.wedding.mapUrl} target="_blank" rel="noreferrer">
+							<span>{pick(content.details.mapLabel)}</span>
+							<svg viewBox="0 0 16 16" fill="none" class="details__btn-icon" aria-hidden="true">
+								<path d="M2 8h11M8 3l5 5-5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</a>
+					</div>
+				</div>
+			</Reveal>
+		</div>
 	</div>
 </section>
 
 <style>
 	.details {
+		background: var(--paper-2);
 		position: relative;
-		overflow: hidden;
 	}
 
-	.details::before {
-		content: '';
-		position: absolute;
-		right: -120px;
-		top: -160px;
-		width: 520px;
-		height: 520px;
-		border: 1px solid var(--line-light);
-		border-radius: 50%;
-		opacity: 0.35;
-		pointer-events: none;
+	.details__header {
+		max-width: 680px;
+		margin-bottom: clamp(40px, 6vw, 68px);
+	}
+
+	.details__title {
+		margin-top: 18px;
+		font-size: clamp(38px, 5.2vw, 68px);
+		line-height: 1.02;
+		color: var(--ink);
+	}
+
+	.details__subtitle {
+		margin-top: 16px;
+		font-size: clamp(16px, 1.25vw, 19px);
+		line-height: 1.65;
+		color: var(--ink-soft);
 	}
 
 	.details__grid {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-		gap: clamp(44px, 8vw, 130px);
-		align-items: start;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: clamp(24px, 3.5vw, 44px);
+		align-items: stretch;
 	}
 
-	.details__when {
-		position: relative;
+	:global(.details__card-reveal) {
+		height: 100%;
+		display: flex;
 	}
 
-	.details__date {
+	.details__card {
+		display: flex;
+		flex-direction: column;
+		width: 100%;
+		padding: clamp(28px, 4vw, 44px);
+		background: #ffffff;
+		border: 1px solid var(--line);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-card);
+		transition:
+			transform 0.4s var(--ease),
+			box-shadow 0.4s var(--ease),
+			border-color 0.4s var(--ease);
+	}
+
+	.details__card:hover {
+		transform: translateY(-4px);
+		box-shadow: var(--shadow-float);
+		border-color: rgba(27, 48, 37, 0.16);
+	}
+
+	.details__card-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 24px;
+	}
+
+	.details__tag {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		padding: 6px 14px;
+		border-radius: var(--radius-pill);
+		background: var(--paper);
+		border: 1px solid var(--line);
+		font-size: 9px;
+		font-weight: 700;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--pine);
+	}
+
+	.details__tag-icon {
+		width: 13px;
+		height: 13px;
+		color: var(--pine);
+	}
+
+	/* Блок даты */
+	.details__date-display {
 		display: flex;
 		align-items: flex-end;
-		gap: 20px;
-		margin-top: 22px;
+		gap: 16px;
+		margin-bottom: 22px;
 	}
 
 	.details__day {
-		font-size: clamp(120px, 16vw, 220px);
-		line-height: 0.68;
+		font-size: clamp(84px, 11vw, 132px);
+		line-height: 0.78;
 		letter-spacing: -0.04em;
+		color: var(--pine);
 	}
 
-	.details__date-side {
+	.details__date-meta {
 		display: flex;
 		flex-direction: column;
-		gap: 2px;
-		padding-bottom: 10px;
+		gap: 4px;
+		padding-bottom: 6px;
 	}
 
 	.details__month {
 		font-family: var(--serif);
-		font-size: clamp(26px, 3vw, 40px);
+		font-size: clamp(26px, 3.2vw, 38px);
 		line-height: 1;
+		color: var(--ink);
 	}
 
 	.details__year {
-		font-size: 9px;
-		font-weight: 700;
-		letter-spacing: 0.26em;
-		color: var(--brass-light);
-	}
-
-	.details__meta {
-		display: flex;
-		align-items: center;
-		gap: 14px;
-		margin-top: 30px;
-		font-size: 9px;
+		font-size: 10px;
 		font-weight: 700;
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
-		color: var(--brass-light);
+		color: var(--ink-soft);
 	}
 
-	.details__meta-line {
-		width: 24px;
-		height: 1px;
-		background: var(--line-light);
+	.details__time-pill {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+		padding: 10px 16px;
+		margin-bottom: 18px;
+		background: rgba(118, 141, 126, 0.1);
+		border: 1px solid rgba(118, 141, 126, 0.22);
+		border-radius: var(--radius-sm);
+		font-size: 13px;
+		color: var(--ink);
+	}
+
+	.details__time-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--pine);
+		flex: 0 0 auto;
 	}
 
 	.details__note {
-		max-width: 34ch;
-		margin-top: 18px;
-		font-size: 15px;
-		line-height: 1.7;
-		color: rgba(247, 242, 233, 0.7);
+		font-size: 14px;
+		line-height: 1.65;
+		color: var(--ink-soft);
+		margin-bottom: 28px;
 	}
 
-	:global(.details__ornament) {
-		width: 160px;
-		color: var(--brass-light);
-		margin-bottom: 30px;
-	}
-
-	.details__venue {
-		max-width: 12ch;
-		font-size: clamp(38px, 4.6vw, 64px);
-		line-height: 1;
+	/* Блок ресторана */
+	.details__venue-title {
+		font-size: clamp(32px, 3.8vw, 46px);
+		line-height: 1.05;
+		color: var(--ink);
+		margin-bottom: 8px;
 	}
 
 	.details__address {
-		max-width: 30ch;
-		margin-top: 18px;
-		font-size: 15px;
-		line-height: 1.7;
-		color: rgba(247, 242, 233, 0.78);
+		font-size: 14px;
+		line-height: 1.6;
+		color: var(--ink-soft);
+		margin-bottom: 20px;
 	}
 
-	.details__links {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 24px;
-		margin-top: 26px;
-	}
-
-	.details__link-item {
-		color: var(--brass-light);
-	}
-
-	.details__calendar-btn {
-		background: none;
-		border: none;
-		padding: 0;
-		margin: 0;
-		cursor: pointer;
-		font: inherit;
-		text-align: left;
-	}
-
-	.details__schedule {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 0;
-		margin-top: clamp(36px, 5vw, 54px);
-		border-top: 1px solid var(--line-light);
-		border-left: 1px solid var(--line-light);
-	}
-
-	.details__schedule-item {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		padding: 16px 18px;
-		border-right: 1px solid var(--line-light);
-		border-bottom: 1px solid var(--line-light);
-	}
-
-	.details__schedule-item span {
-		font-size: 8px;
-		font-weight: 700;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
-		color: rgba(247, 242, 233, 0.52);
-	}
-
-	.details__schedule-item strong {
-		font-family: var(--serif);
-		font-size: 24px;
-		font-weight: 400;
-		line-height: 1.1;
-		color: var(--paper);
-	}
-
-	.details__map-card {
+	.details__preview {
 		position: relative;
-		display: flex;
-		align-items: flex-end;
-		justify-content: space-between;
-		gap: 24px;
-		min-height: 300px;
-		margin-top: clamp(48px, 7vw, 86px);
-		padding: clamp(22px, 3.4vw, 40px);
-		border: 1px solid var(--line-light);
+		display: block;
+		width: 100%;
+		height: clamp(180px, 22vw, 240px);
+		border-radius: var(--radius);
 		overflow: hidden;
-		color: var(--paper);
-		background: var(--pine-deep);
-		transition: border-color 0.3s var(--ease);
+		border: 1px solid var(--line);
+		margin-bottom: 24px;
+		text-decoration: none;
+		background: var(--paper-3);
 	}
 
-	.details__map-card:hover {
-		border-color: var(--brass-light);
-	}
-
-	.details__map-photo {
-		position: absolute;
-		inset: 0;
+	.details__preview-img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		object-position: center 35%;
-		pointer-events: none;
+		transition: transform 0.6s var(--ease);
 	}
 
-	/* С фото декоративная графика не нужна */
-	.details__map-card.has-photo .details__map-art {
-		display: none;
+	.details__preview:hover .details__preview-img {
+		transform: scale(1.04);
 	}
 
-	/* Двойной затемняющий градиент поверх фото — для безупречной читаемости текста */
-	.details__map-card.has-photo::before {
-		content: '';
+	.details__preview-empty {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		height: 100%;
+		gap: 8px;
+		color: var(--ink-soft);
+		font-size: 12px;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	.details__preview-empty-icon {
+		width: 32px;
+		height: 32px;
+		color: var(--pine);
+	}
+
+	.details__preview-scrim {
 		position: absolute;
 		inset: 0;
 		background: linear-gradient(
 			180deg,
-			rgba(12, 24, 18, 0.4) 0%,
-			rgba(12, 24, 18, 0.6) 45%,
-			rgba(12, 24, 18, 0.92) 100%
+			rgba(17, 32, 24, 0.05) 0%,
+			rgba(17, 32, 24, 0.72) 100%
 		);
-		pointer-events: none;
-		z-index: 1;
-	}
-
-	.details__map-card.has-photo::after {
-		content: '';
-		position: absolute;
-		inset: auto 0 0 0;
-		height: 80%;
-		background: linear-gradient(
-			to top,
-			rgba(10, 20, 15, 0.98) 0%,
-			rgba(10, 20, 15, 0.88) 45%,
-			rgba(10, 20, 15, 0.35) 80%,
-			transparent 100%
-		);
-		pointer-events: none;
-		z-index: 1;
-	}
-
-	.details__map-art {
-		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-		color: var(--paper);
-		pointer-events: none;
-	}
-
-	.details__map-info {
-		position: relative;
-		z-index: 2;
 		display: flex;
-		flex-direction: column;
-		gap: 6px;
-		max-width: 60%;
+		align-items: flex-end;
+		justify-content: flex-end;
+		padding: 16px;
+		transition: background 0.3s var(--ease);
 	}
 
-	.details__map-kicker {
-		font-size: 9px;
-		font-weight: 700;
-		letter-spacing: 0.24em;
-		color: #e5cf9c;
-		text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+	.details__preview:hover .details__preview-scrim {
+		background: linear-gradient(
+			180deg,
+			rgba(17, 32, 24, 0.1) 0%,
+			rgba(17, 32, 24, 0.82) 100%
+		);
 	}
 
-	.details__map-info strong {
-		font-family: var(--serif);
-		font-size: clamp(28px, 3.4vw, 44px);
-		font-weight: 500;
-		line-height: 1.08;
-		color: #ffffff;
-		text-shadow:
-			0 2px 10px rgba(0, 0, 0, 0.95),
-			0 1px 3px rgba(0, 0, 0, 0.9);
-	}
-
-	.details__map-info span:last-child {
-		font-size: 13px;
-		line-height: 1.5;
-		color: rgba(247, 242, 233, 0.95);
-		text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
-	}
-
-	.details__map-action {
-		position: relative;
-		z-index: 2;
+	.details__preview-pill {
 		display: inline-flex;
 		align-items: center;
-		gap: 10px;
-		padding: 10px 18px;
-		background: rgba(14, 28, 21, 0.88);
-		border: 1px solid var(--brass);
-		backdrop-filter: blur(8px);
-		-webkit-backdrop-filter: blur(8px);
-		font-size: 10px;
+		gap: 8px;
+		padding: 8px 16px;
+		border-radius: var(--radius-pill);
+		background: rgba(255, 255, 255, 0.92);
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
+		color: var(--pine);
+		font-size: 9px;
 		font-weight: 700;
-		letter-spacing: 0.16em;
+		letter-spacing: 0.14em;
 		text-transform: uppercase;
-		color: #ffffff;
-		white-space: nowrap;
-		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-		transition: all 0.25s var(--ease);
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+		transition: transform 0.3s var(--ease);
 	}
 
-	.details__map-action:hover {
-		background: var(--brass);
-		color: var(--pine-deep);
-		border-color: var(--brass);
-		box-shadow: 0 6px 22px rgba(180, 154, 99, 0.35);
+	.details__preview:hover .details__preview-pill {
+		transform: translateY(-2px);
 	}
 
-	.details__map-action svg {
-		width: 13px;
-		height: 13px;
+	.details__preview-pill svg {
+		width: 12px;
+		height: 12px;
 	}
 
-	@media (max-width: 900px) {
+	/* Кнопки действий */
+	.details__action {
+		margin-top: auto;
+		display: flex;
+	}
+
+	.details__btn {
+		width: 100%;
+	}
+
+	.details__btn-icon {
+		width: 14px;
+		height: 14px;
+		flex: 0 0 auto;
+	}
+
+	@media (max-width: 860px) {
 		.details__grid {
 			grid-template-columns: minmax(0, 1fr);
-			gap: 52px;
+			gap: 24px;
 		}
 
-		.details__venue {
-			max-width: 16ch;
-		}
-	}
-
-	@media (max-width: 620px) {
-		.details__date {
-			gap: 14px;
+		.details__card {
+			padding: 24px 20px;
 		}
 
-		.details__day {
-			font-size: 126px;
-		}
-
-		.details__schedule {
-			grid-template-columns: minmax(0, 1fr);
-		}
-
-		.details__map-card {
-			flex-direction: column;
-			align-items: flex-start;
-			justify-content: flex-end;
-			min-height: 320px;
-		}
-
-		.details__map-info {
-			max-width: 100%;
-		}
-
-		.details__map-action {
-			margin-top: 6px;
-		}
-
-		:global(.details__ornament) {
-			width: 120px;
+		.details__preview {
+			height: 200px;
 		}
 	}
 </style>

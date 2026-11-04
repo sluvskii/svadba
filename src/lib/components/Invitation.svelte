@@ -116,7 +116,7 @@
 	:global(.invitation__flower) {
 		width: 28px;
 		height: 40px;
-		color: var(--brass);
+		color: var(--sage);
 		flex: 0 0 auto;
 	}
 

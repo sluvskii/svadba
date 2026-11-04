@@ -32,7 +32,7 @@
 		left: 0;
 		right: 0;
 		height: 2px;
-		background: linear-gradient(90deg, var(--brass), var(--sage));
+		background: linear-gradient(90deg, var(--pine), var(--sage));
 		transform-origin: left;
 		transform: scaleX(0);
 		z-index: 90;

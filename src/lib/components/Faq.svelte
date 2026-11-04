@@ -54,7 +54,7 @@
 
 	:global(.faq__ornament) {
 		width: 180px;
-		color: var(--brass);
+		color: var(--sage);
 		margin-bottom: 10px;
 	}
 

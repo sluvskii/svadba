@@ -60,7 +60,8 @@
 	:global(.footer__ornament) {
 		width: min(100%, 260px);
 		margin-inline: auto;
-		color: var(--brass-light);
+		color: var(--sage);
+		opacity: 0.7;
 	}
 
 	.footer__main {
@@ -83,7 +84,7 @@
 		font-weight: 700;
 		letter-spacing: 0.24em;
 		text-transform: uppercase;
-		color: var(--brass-light);
+		color: var(--sage-light);
 	}
 
 	.footer__place {

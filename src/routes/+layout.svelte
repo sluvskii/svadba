@@ -24,7 +24,7 @@
 		name="description"
 		content="Приглашаем вас разделить с нами самый тёплый зимний день. 17 декабря 2026, Нефтекамск, ресторан «Тантана»."
 	/>
-	<meta name="theme-color" content="#1d332a" />
+	<meta name="theme-color" content="#1b3025" />
 	<meta property="og:type" content="website" />
 	<meta property="og:site_name" content="Алина и Камиль" />
 	<meta property="og:title" content="Алина и Камиль — 17 декабря 2026" />
