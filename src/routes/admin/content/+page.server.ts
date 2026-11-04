@@ -2,6 +2,7 @@ import { fail } from '@sveltejs/kit';
 import { loadContentOverride, saveContentOverride } from '#lib/repo';
 import { content as defaultContent } from '#lib/content';
 import { pick } from '#lib/i18n.svelte';
+import { parseEditableDrinks, type EditableDrink } from '#lib/rsvp-form';
 import type { Actions, PageServerLoad } from './$types';
 
 const MAX_PHOTO_BYTES = 8 * 1024 * 1024; // 8 МБ
@@ -41,7 +42,7 @@ export const load: PageServerLoad = async (event) => {
 		city: (override?.city as string) || pick(defaultContent.wedding.city),
 		address: (override?.address as string) || pick(defaultContent.wedding.address),
 		mapUrl: (override?.mapUrl as string) || defaultContent.wedding.mapUrl,
-		gatheringTime: (override?.gatheringTime as string) || '14:00',
+		gatheringTime: override?.gatheringTime !== undefined ? (override.gatheringTime as string) : '14:00',
 		ceremonyTime: (override?.ceremonyTime as string) || '14:20',
 		dinnerTime: (override?.dinnerTime as string) || '18:00',
 		endTime: (override?.endTime as string) || '00:00',
@@ -52,6 +53,8 @@ export const load: PageServerLoad = async (event) => {
 		dressCodeText: (override?.dressCodeText as string) || pick(defaultContent.dressCode.text),
 		dressCodeNote: (override?.dressCodeNote as string) || pick(defaultContent.dressCode.note)
 	};
+
+	const drinksList: EditableDrink[] = parseEditableDrinks(override?.drinks);
 
 	// Списки: сохранённые главы/вопросы/блюда или пустые массивы —
 	// редактор стартует с тем, что реально видно на сайте.
@@ -98,7 +101,7 @@ export const load: PageServerLoad = async (event) => {
 		}
 	}
 
-	return { current, storyChapters, faqItems, menuCourses, menuBar, photoExists };
+	return { current, storyChapters, faqItems, menuCourses, menuBar, drinksList, photoExists };
 };
 
 export const actions: Actions = {
@@ -122,6 +125,19 @@ export const actions: Actions = {
 			dressCodeText: String(data.get('dressCodeText') ?? '').trim().slice(0, 600),
 			dressCodeNote: String(data.get('dressCodeNote') ?? '').trim().slice(0, 400)
 		};
+
+		// Напитки RSVP
+		const drinksRaw = parseJsonList<EditableDrink>(data.get('drinksJson'), 24);
+		if (drinksRaw && drinksRaw.length > 0) {
+			payload.drinks = drinksRaw
+				.map((d, i) => ({
+					id: clean(d?.id, 40) || `drink-${i + 1}`,
+					labelRu: clean(d?.labelRu, 60),
+					labelTt: clean(d?.labelTt, 60),
+					alcohol: Boolean(d?.alcohol)
+				}))
+				.filter((d) => d.labelRu);
+		}
 
 		// История: главы (title + text). Пустые главы отбрасываются.
 		const chapters = parseJsonList<EditableChapter>(data.get('storyJson'), 8);

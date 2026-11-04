@@ -1,8 +1,15 @@
-import { listGuests } from '#lib/repo';
+import { listGuests, loadContentOverride } from '#lib/repo';
+import { parseDrinkOptions } from '#lib/rsvp-form';
+import { pick } from '#lib/i18n.svelte';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
-	const guests = await listGuests(event);
+	const [guests, override] = await Promise.all([
+		listGuests(event),
+		loadContentOverride(event)
+	]);
+
+	const activeDrinkOptions = parseDrinkOptions(override?.drinks);
 
 	let confirmedCount = 0;
 	let declinedCount = 0;
@@ -10,16 +17,10 @@ export const load: PageServerLoad = async (event) => {
 	let plusOnesConfirmed = 0;
 	let transferCount = 0;
 
-	const drinksTally: Record<string, number> = {
-		'red-wine': 0,
-		'white-wine': 0,
-		champagne: 0,
-		vodka: 0,
-		cognac: 0,
-		whiskey: 0,
-		soft: 0,
-		none: 0
-	};
+	const drinksTally: Record<string, number> = {};
+	for (const opt of activeDrinkOptions) {
+		drinksTally[opt.id] = 0;
+	}
 
 	const foodNotes: { guestName: string; note: string }[] = [];
 	const songRequests: { guestName: string; song: string }[] = [];
@@ -98,6 +99,11 @@ export const load: PageServerLoad = async (event) => {
 		declinedCount,
 		pendingCount,
 		transferCount,
+		drinkOptions: activeDrinkOptions.map((d) => ({
+			id: d.id,
+			label: pick(d.label),
+			alcohol: d.alcohol
+		})),
 		drinksTally,
 		foodNotes,
 		songRequests,

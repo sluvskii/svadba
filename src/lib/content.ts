@@ -370,3 +370,177 @@ export const ui = {
 		backHome: t('Вернуться на сайт', 'Сайтка кайту')
 	}
 };
+
+/**
+ * Переопределение текстов из админки (D1 → site_content 'site').
+ * Мутирует общий объект content — и SSR, и гидрация увидят актуальные значения.
+ */
+export function applyContentOverride(ov: Record<string, unknown> | null | undefined): void {
+	if (!ov) return;
+	const str = (key: string): string => {
+		const v = ov[key];
+		return typeof v === 'string' && v.trim() ? v.trim() : '';
+	};
+	const loc = (key: string): Localized | null => {
+		const s = str(key);
+		return s ? t(s) : null;
+	};
+
+	const venue = loc('venue');
+	const address = loc('address');
+	const city = loc('city');
+	const dateLong = loc('dateLong');
+	const mapUrl = str('mapUrl');
+
+	if (venue) {
+		content.wedding.venue = venue;
+		content.details.venue = venue;
+	}
+	if (address) {
+		content.wedding.address = address;
+		content.details.address = address;
+	}
+	if (city) content.wedding.city = city;
+	if (dateLong) {
+		content.wedding.dateLong = dateLong;
+		content.hero.date = dateLong;
+	}
+	if (mapUrl) content.wedding.mapUrl = mapUrl;
+
+	// Сбор гостей и расписание программы
+	const gatheringVal = ov['gatheringTime'] !== undefined ? str('gatheringTime') : '14:00';
+	const ceremonyVal = str('ceremonyTime') || '14:20';
+	const dinnerVal = str('dinnerTime') || '18:00';
+	const endVal = str('endTime') || '00:00';
+
+	const newSchedule: { label: Localized; value: string }[] = [];
+	const newTimeline: TimelineItem[] = [];
+
+	if (gatheringVal) {
+		newSchedule.push({ label: t('Сбор гостей', 'Кунаклар җыенуы'), value: gatheringVal });
+		newTimeline.push({
+			time: gatheringVal,
+			title: t('Сбор гостей', 'Кунаклар җыенуы'),
+			text: t(
+				'Добро пожаловать! Время познакомиться и настроиться на праздник.',
+				'Рәхим итегез! Танышырга һәм бәйрәмгә көйләнергә вакыт.'
+			)
+		});
+		content.details.time = gatheringVal;
+		content.details.note = t(
+			`Сбор гостей в ${gatheringVal}. Мы будем ждать вас.`,
+			`Кунаклар ${gatheringVal}да җыела. Сезне көтәбез.`
+		);
+	} else {
+		// Сбор гостей убран пользователем
+		content.details.time = ceremonyVal;
+		content.details.note = t(
+			`Начало церемонии в ${ceremonyVal}. Мы будем ждать вас.`,
+			`Тантана башлануы ${ceremonyVal}да. Сезне көтәбез.`
+		);
+	}
+
+	newSchedule.push({ label: t('Церемония регистрации', 'Тантаналы теркәү'), value: ceremonyVal });
+	newTimeline.push({
+		time: ceremonyVal,
+		title: t('Церемония регистрации', 'Тантаналы теркәү'),
+		text: t('Самый волнительный момент вечера.', 'Кичнең иң дулкынландыргыч мизгеле.')
+	});
+
+	newSchedule.push({ label: t('Начало банкета', 'Банкет башлануы'), value: dinnerVal });
+	newTimeline.push({
+		time: dinnerVal,
+		title: t('Начало банкета', 'Банкет башлануы'),
+		text: t('Время за большим столом, тёплых слов и тостов.', 'Зур өстәл артында җылы сүзләр һәм тостлар вакыты.')
+	});
+
+	newSchedule.push({ label: t('Завершение вечера', 'Кич тәмамлануы'), value: endVal });
+	newTimeline.push({
+		time: endVal,
+		title: t('Завершение вечера', 'Кич тәмамлануы'),
+		text: t('Спасибо, что разделили с нами этот день.', 'Бу көнне безнең белән бүлешкәнегез өчен рәхмәт.')
+	});
+
+	content.details.schedule = newSchedule;
+	content.timeline.items = newTimeline;
+
+	const invitationTitle = loc('invitationTitle');
+	const invitationSignature = loc('invitationSignature');
+	const invitationText = str('invitationText');
+	if (invitationTitle) content.invitation.title = invitationTitle;
+	if (invitationSignature) content.invitation.signature = invitationSignature;
+	if (invitationText) {
+		content.invitation.paragraphs = invitationText
+			.split(/\n\s*\n/)
+			.map((p) => p.trim())
+			.filter(Boolean)
+			.map((p) => t(p));
+	}
+
+	const dressTitle = loc('dressCodeTitle');
+	const dressText = loc('dressCodeText');
+	const dressNote = loc('dressCodeNote');
+	if (dressTitle) content.dressCode.title = dressTitle;
+	if (dressText) content.dressCode.text = dressText;
+	if (dressNote) content.dressCode.note = dressNote;
+
+	const story = ov['story'] as { chapters?: { title?: unknown; text?: unknown }[] } | undefined;
+	if (story && Array.isArray(story.chapters)) {
+		const tones = ['sage', 'sand', 'pine', 'paper'] as const;
+		const romans = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
+		const list = story.chapters
+			.map((c) => ({
+				title: typeof c?.title === 'string' ? c.title.trim() : '',
+				text: typeof c?.text === 'string' ? c.text.trim() : ''
+			}))
+			.filter((c) => c.title || c.text)
+			.slice(0, 8);
+		content.story.chapters = list.map((c, i) => ({
+			numeral: romans[i] ?? String(i + 1),
+			title: t(c.title),
+			text: t(c.text),
+			tone: tones[i % tones.length]
+		}));
+	}
+
+	const faq = ov['faq'] as { items?: { q?: unknown; a?: unknown }[] } | undefined;
+	if (faq && Array.isArray(faq.items)) {
+		const list = faq.items
+			.map((item) => ({
+				q: typeof item?.q === 'string' ? item.q.trim() : '',
+				a: typeof item?.a === 'string' ? item.a.trim() : ''
+			}))
+			.filter((item) => item.q && item.a)
+			.slice(0, 16);
+		if (list.length > 0) {
+			content.faq.items = list.map((item) => ({
+				q: t(item.q),
+				a: t(item.a)
+			}));
+		}
+	}
+
+	const menu = ov['menu'] as { courses?: { label?: unknown; title?: unknown; text?: unknown }[]; bar?: unknown } | undefined;
+	if (menu) {
+		if (Array.isArray(menu.courses)) {
+			const courses = menu.courses
+				.map((c) => ({
+					label: typeof c?.label === 'string' ? c.label.trim() : '',
+					title: typeof c?.title === 'string' ? c.title.trim() : '',
+					text: typeof c?.text === 'string' ? c.text.trim() : ''
+				}))
+				.filter((c) => c.title)
+				.slice(0, 8);
+			if (courses.length > 0) {
+				content.menu.courses = courses.map((c) => ({
+					label: t(c.label),
+					title: t(c.title),
+					text: t(c.text)
+				}));
+			}
+		}
+		if (typeof menu.bar === 'string' && menu.bar.trim()) {
+			content.menu.bar = t(menu.bar.trim());
+		}
+	}
+}

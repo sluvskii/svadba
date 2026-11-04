@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { content, ui } from '#lib/content.js';
+	import { content, ui, applyContentOverride } from '#lib/content.js';
 	import { i18n, pick, setLang } from '#lib/i18n.svelte.js';
 	import RsvpForm from '#lib/components/RsvpForm.svelte';
 	import Monogram from '#lib/components/Monogram.svelte';
@@ -7,6 +7,9 @@
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
+
+	/* svelte-ignore state_referenced_locally */
+	applyContentOverride(data.contentOverride);
 
 	const guest = $derived(data.guest);
 	const displayName = $derived(
@@ -65,7 +68,7 @@
 
 		<section class="invite__form-card">
 			<h2 class="display invite__form-title">{pick(content.rsvp.title)}</h2>
-			<RsvpForm {guest} initiallySubmitted={form?.success === true} />
+			<RsvpForm {guest} drinkOptions={data.drinkOptions} initiallySubmitted={form?.success === true} />
 		</section>
 
 		<section class="invite__recap">

@@ -18,6 +18,35 @@
 	let courses = $state<{ label: string; title: string; text: string }[]>(data.menuCourses);
 	/* svelte-ignore state_referenced_locally */
 	let menuBar = $state(data.menuBar);
+	/* svelte-ignore state_referenced_locally */
+	let drinksList = $state<{ id: string; labelRu: string; labelTt?: string; alcohol: boolean }[]>(data.drinksList);
+
+	function addDrink() {
+		if (drinksList.length >= 20) return;
+		const id = `drink-${Date.now()}`;
+		drinksList = [...drinksList, { id, labelRu: '', labelTt: '', alcohol: true }];
+	}
+
+	function resetDrinksToDefault() {
+		drinksList = [
+			{ id: 'red-wine', labelRu: 'Красное вино', labelTt: 'Кызыл шәраб', alcohol: true },
+			{ id: 'white-wine', labelRu: 'Белое вино', labelTt: 'Ак шәраб', alcohol: true },
+			{ id: 'champagne', labelRu: 'Шампанское', labelTt: 'Шампан', alcohol: true },
+			{ id: 'vodka', labelRu: 'Водка', labelTt: 'Водка', alcohol: true },
+			{ id: 'soft', labelRu: 'Безалкогольные напитки', labelTt: 'Алкогольсез эчемлекләр', alcohol: false },
+			{ id: 'none', labelRu: 'Не пью алкоголь', labelTt: 'Алкоголь эчмим', alcohol: false }
+		];
+	}
+
+	function moveDrink(index: number, direction: number) {
+		const targetIndex = index + direction;
+		if (targetIndex < 0 || targetIndex >= drinksList.length) return;
+		const copy = [...drinksList];
+		const temp = copy[index];
+		copy[index] = copy[targetIndex];
+		copy[targetIndex] = temp;
+		drinksList = copy;
+	}
 
 	// После успешной загрузки/удаления фото обновляем превью и флаг.
 	let photoTs = $state(Date.now());
@@ -131,6 +160,7 @@
 		<input type="hidden" name="storyJson" value={JSON.stringify(chapters)} />
 		<input type="hidden" name="faqJson" value={JSON.stringify(faqItems)} />
 		<input type="hidden" name="menuJson" value={JSON.stringify(courses)} />
+		<input type="hidden" name="drinksJson" value={JSON.stringify(drinksList)} />
 		<input type="hidden" name="menuBar" value={menuBar} />
 
 		<!-- Section 1: Date & Venue -->
@@ -164,7 +194,14 @@
 
 				<div class="field">
 					<label class="field-label" for="gatheringTime">Сбор гостей</label>
-					<input class="input" id="gatheringTime" name="gatheringTime" value={data.current.gatheringTime} />
+					<input
+						class="input"
+						id="gatheringTime"
+						name="gatheringTime"
+						value={data.current.gatheringTime}
+						placeholder="Пусто (скрыть сбор гостей)"
+					/>
+					<p class="form-hint" style="margin-top: 4px;">Оставьте пустым, чтобы убрать сбор гостей из расписания</p>
 				</div>
 
 				<div class="field">
@@ -330,6 +367,69 @@
 			<button class="btn btn--outline" type="button" onclick={addFaq} disabled={faqItems.length >= 12}>
 				+ Добавить вопрос
 			</button>
+		</section>
+
+		<!-- Section 7: RSVP Drink Preferences -->
+		<section class="card">
+			<div class="card__head" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 12px;">
+				<div>
+					<h2 class="card__title" style="margin: 0; padding: 0; border: 0;">🍷 Напитки для гостей (RSVP)</h2>
+					<p class="card__hint" style="margin: 4px 0 0;">
+						Настройте список напитков, которые гости выбирают при подтверждении участия. Коньяк и виски убраны по умолчанию.
+					</p>
+				</div>
+				<div style="display: flex; gap: 8px;">
+					<button class="btn btn--outline" type="button" onclick={resetDrinksToDefault}>
+						Сбросить к исходным
+					</button>
+					<button class="btn btn--outline" type="button" onclick={addDrink} disabled={drinksList.length >= 20}>
+						+ Добавить напиток
+					</button>
+				</div>
+			</div>
+
+			<div style="margin-top: 16px;">
+				{#each drinksList as item, i}
+					<div class="list-row">
+						<div class="list-row__head">
+							<span class="list-row__num">Напиток #{i + 1} {item.alcohol ? '· 🍷 Алкогольный' : '· 🧃 Безалкогольный'}</span>
+							<div style="display: flex; gap: 6px; align-items: center;">
+								{#if i > 0}
+									<button class="list-row__remove" type="button" title="Выше" onclick={() => moveDrink(i, -1)}>↑</button>
+								{/if}
+								{#if i < drinksList.length - 1}
+									<button class="list-row__remove" type="button" title="Ниже" onclick={() => moveDrink(i, 1)}>↓</button>
+								{/if}
+								<button
+									class="list-row__remove"
+									type="button"
+									title="Удалить"
+									onclick={() => (drinksList = drinksList.filter((_, j) => j !== i))}
+								>
+									✕ Удалить
+								</button>
+							</div>
+						</div>
+
+						<div class="form-grid">
+							<div class="field">
+								<label class="field-label" for="drink-ru-{i}">Название на русском *</label>
+								<input class="input" id="drink-ru-{i}" bind:value={item.labelRu} placeholder="Например: Красное вино" required />
+							</div>
+							<div class="field">
+								<label class="field-label" for="drink-tt-{i}">Название на татарском (опционально)</label>
+								<input class="input" id="drink-tt-{i}" bind:value={item.labelTt} placeholder="Кызыл шәраб" />
+							</div>
+							<div class="field full-width">
+								<label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+									<input type="checkbox" bind:checked={item.alcohol} />
+									<span><strong>Алкогольный напиток</strong> (при выборе гостем снимает отметку «Не пью алкоголь», и наоборот)</span>
+								</label>
+							</div>
+						</div>
+					</div>
+				{/each}
+			</div>
 		</section>
 
 		<!-- Bottom Save Button Bar -->

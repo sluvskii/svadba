@@ -3,17 +3,6 @@
 
 	let { data }: PageProps = $props();
 
-	const DRINK_LABELS: Record<string, { label: string; icon: string }> = {
-		'red-wine': { label: 'Красное вино', icon: '🍷' },
-		'white-wine': { label: 'Белое вино', icon: '🥂' },
-		champagne: { label: 'Шампанское', icon: '🍾' },
-		vodka: { label: 'Водка', icon: '🍸' },
-		cognac: { label: 'Коньяк', icon: '🥃' },
-		whiskey: { label: 'Виски', icon: '🥃' },
-		soft: { label: 'Безалкогольное', icon: '🧃' },
-		none: { label: 'Не пьют алкоголь', icon: '🚫' }
-	};
-
 	const confirmedPct = $derived(
 		data.totalGuests > 0 ? Math.round((data.confirmedCount / data.totalGuests) * 100) : 0
 	);
@@ -72,15 +61,6 @@
 			<div class="kpi-card__value">{data.pendingCount}</div>
 			<span class="kpi-card__hint">пока не ответили</span>
 		</div>
-
-		<div class="kpi-card">
-			<div class="kpi-card__top">
-				<span class="kpi-card__label">Нужен трансфер</span>
-				<span class="kpi-card__icon">🚗</span>
-			</div>
-			<div class="kpi-card__value">{data.transferCount}</div>
-			<span class="kpi-card__hint">запросов на поездку</span>
-		</div>
 	</section>
 
 	<!-- Drinks Breakdown -->
@@ -93,12 +73,12 @@
 		</div>
 
 		<div class="drinks-grid">
-			{#each Object.entries(DRINK_LABELS) as [key, meta]}
-				{@const count = data.drinksTally[key] || 0}
+			{#each data.drinkOptions as opt}
+				{@const count = data.drinksTally[opt.id] || 0}
 				<div class="drink-item">
-					<div class="drink-item__icon">{meta.icon}</div>
+					<div class="drink-item__icon">{opt.alcohol ? '🍷' : (opt.id === 'none' ? '🚫' : '🧃')}</div>
 					<div class="drink-item__info">
-						<span class="drink-item__name">{meta.label}</span>
+						<span class="drink-item__name">{opt.label}</span>
 						<strong class="drink-item__count">{count} {count === 1 ? 'человек' : 'человек(а)'}</strong>
 					</div>
 				</div>

@@ -1,7 +1,7 @@
 import { error, fail } from '@sveltejs/kit';
-import { getGuestByToken, saveRsvp } from '#lib/repo';
+import { getGuestByToken, saveRsvp, loadContentOverride } from '#lib/repo';
 import { notifyTelegramRsvp } from '#lib/notify';
-import { drinkOptions } from '#lib/rsvp-form';
+import { parseDrinkOptions } from '#lib/rsvp-form';
 import { t } from '#lib/i18n.svelte';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -13,6 +13,9 @@ export const load: PageServerLoad = async (event) => {
 	if (!row) {
 		throw error(404, 'invite-not-found');
 	}
+
+	const override = await loadContentOverride(event);
+	const activeDrinks = parseDrinkOptions(override?.drinks);
 
 	let parsedDrinks: string[] = [];
 	if (row.rsvp?.drinks) {
@@ -46,7 +49,7 @@ export const load: PageServerLoad = async (event) => {
 					children: row.rsvp.children_names || '',
 					drinks: parsedDrinks,
 					food: row.rsvp.food_notes || '',
-					transfer: Boolean(row.rsvp.transfer_needed),
+					transfer: false,
 					song: row.rsvp.song_request || '',
 					comment: row.rsvp.comment || '',
 					submittedAt: row.rsvp.updated_at
@@ -54,7 +57,7 @@ export const load: PageServerLoad = async (event) => {
 			: null
 	};
 
-	return { guest };
+	return { guest, drinkOptions: activeDrinks, contentOverride: override };
 };
 
 export const actions: Actions = {
@@ -78,13 +81,15 @@ export const actions: Actions = {
 			}
 		}
 
-		// Напитки принимаем только из справочника формы.
-		const validDrinkIds = new Set(drinkOptions.map((d) => d.id));
+		// Напитки принимаем из актуального справочника (настроенного в админке или по умолчанию).
+		const override = await loadContentOverride(event);
+		const activeDrinks = parseDrinkOptions(override?.drinks);
+		const validDrinkIds = new Set(activeDrinks.map((d) => d.id));
 		const drinks = data
 			.getAll('drinks')
 			.map(String)
 			.filter((d) => validDrinkIds.has(d))
-			.slice(0, 16);
+			.slice(0, 20);
 
 		// +1 и детей фиксируем только если гостю это разрешено.
 		const plusOneName = row.plus_one_allowed
@@ -94,7 +99,7 @@ export const actions: Actions = {
 			? String(data.get('children') ?? '').trim().slice(0, 300)
 			: '';
 		const foodNotes = String(data.get('food') ?? '').trim().slice(0, 300);
-		const transferNeeded = data.get('transfer') === 'on' || data.get('transfer') === 'true';
+		const transferNeeded = false;
 		const songRequest = String(data.get('song') ?? '').trim().slice(0, 200);
 		const comment = String(data.get('comment') ?? '').trim().slice(0, 1000);
 

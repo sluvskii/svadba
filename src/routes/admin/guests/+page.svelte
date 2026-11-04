@@ -30,8 +30,6 @@
 		'white-wine': 'Белое вино',
 		champagne: 'Шампанское',
 		vodka: 'Водка',
-		cognac: 'Коньяк',
-		whiskey: 'Виски',
 		soft: 'Безалкогольное',
 		none: 'Не пьет'
 	};
@@ -87,7 +85,6 @@
 			'Стол',
 			'Напитки',
 			'Особенности питания',
-			'Нужен трансфер',
 			'Песня',
 			'Пожелание',
 			'Ссылка на приглашение'
@@ -120,7 +117,6 @@
 				`"${(g.table_name || '').replace(/"/g, '""')}"`,
 				`"${drinks.replace(/"/g, '""')}"`,
 				`"${(g.rsvp?.food_notes || '').replace(/"/g, '""')}"`,
-				`"${g.rsvp?.transfer_needed ? 'Да' : 'Нет'}"`,
 				`"${(g.rsvp?.song_request || '').replace(/"/g, '""')}"`,
 				`"${(g.rsvp?.comment || '').replace(/"/g, '""')}"`,
 				`"${getInviteUrl(g.token)}"`

@@ -57,7 +57,9 @@ export async function notifyTelegramRsvp(
 		if (data.foodNotes) {
 			msg += `🍽️ *Пожелания по еде:* ${data.foodNotes}\n`;
 		}
-		msg += `🚗 *Трансфер:* ${data.transferNeeded ? 'Да, нужен' : 'Не нужен'}\n`;
+		if (data.transferNeeded) {
+			msg += `🚗 *Трансфер:* Да, нужен\n`;
+		}
 		if (data.songRequest) {
 			msg += `🎵 *Песня:* ${data.songRequest}\n`;
 		}

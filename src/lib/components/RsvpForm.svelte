@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { slide } from 'svelte/transition';
-	import { drinkOptions, rsvpForm } from '#lib/rsvp-form.js';
+	import { defaultDrinkOptions, rsvpForm, type DrinkOption } from '#lib/rsvp-form.js';
 	import { i18n, pick } from '#lib/i18n.svelte.js';
 	import type { Guest } from '#lib/rsvp-form.js';
 	import Ornament from './Ornament.svelte';
@@ -9,9 +9,10 @@
 	type Props = {
 		guest: Guest;
 		initiallySubmitted?: boolean;
+		drinkOptions?: DrinkOption[];
 	};
 
-	let { guest, initiallySubmitted = false }: Props = $props();
+	let { guest, initiallySubmitted = false, drinkOptions = defaultDrinkOptions }: Props = $props();
 
 	// Initial field values are intentionally captured once from the guest.
 	/* svelte-ignore state_referenced_locally */
@@ -25,8 +26,6 @@
 	/* svelte-ignore state_referenced_locally */
 	let food = $state(guest.response?.food ?? '');
 	/* svelte-ignore state_referenced_locally */
-	let transfer = $state(guest.response?.transfer ?? false);
-	/* svelte-ignore state_referenced_locally */
 	let song = $state(guest.response?.song ?? '');
 	/* svelte-ignore state_referenced_locally */
 	let comment = $state(guest.response?.comment ?? '');
@@ -38,20 +37,27 @@
 
 	const isYes = $derived(attendance === 'yes');
 
+	function isNoneOption(optId: string): boolean {
+		if (optId === 'none') return true;
+		const opt = drinkOptions.find((o) => o.id === optId);
+		if (!opt) return false;
+		return !opt.alcohol && pick(opt.label).toLowerCase().includes('не пью');
+	}
+
 	function toggleDrink(id: string) {
-		if (id === 'none') {
-			if (drinks.includes('none')) {
-				drinks = drinks.filter((d) => d !== 'none');
+		if (isNoneOption(id)) {
+			if (drinks.includes(id)) {
+				drinks = drinks.filter((d) => d !== id);
 			} else {
 				// При выборе «Не пью алкоголь» снимаем алкогольные напитки
 				drinks = drinks.filter((d) => !drinkOptions.find((o) => o.id === d)?.alcohol);
-				drinks = [...drinks, 'none'];
+				drinks = [...drinks, id];
 			}
 		} else {
 			const opt = drinkOptions.find((o) => o.id === id);
 			if (opt?.alcohol) {
 				// При выборе алкогольного напитка снимаем отметку «Не пью алкоголь»
-				drinks = drinks.filter((d) => d !== 'none');
+				drinks = drinks.filter((d) => !isNoneOption(d));
 			}
 			drinks = drinks.includes(id) ? drinks.filter((d) => d !== id) : [...drinks, id];
 		}
@@ -183,16 +189,6 @@
 						/>
 					</div>
 
-					<!-- transfer -->
-					<label class="rsvp-form__check">
-						<input type="checkbox" name="transfer" bind:checked={transfer} />
-						<span class="choice__mark" aria-hidden="true"></span>
-						<span class="rsvp-form__check-body">
-							<strong>{pick(rsvpForm.transfer)}</strong>
-							<small>{pick(rsvpForm.transferHint)}</small>
-						</span>
-					</label>
-
 					<!-- song -->
 					<div class="field">
 						<label class="field-label" for="song">{pick(rsvpForm.song)}</label>
@@ -267,57 +263,6 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 10px;
-	}
-
-	.rsvp-form__check {
-		display: inline-flex;
-		align-items: flex-start;
-		gap: 12px;
-		margin: 4px 0;
-		cursor: pointer;
-		font-size: 13px;
-		line-height: 1.5;
-		user-select: none;
-	}
-
-	.rsvp-form__check input {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		opacity: 0;
-		pointer-events: none;
-	}
-
-	.rsvp-form__check .choice__mark {
-		margin-top: 3px;
-	}
-
-	.rsvp-form__check-body strong {
-		display: block;
-		font-weight: 600;
-		color: var(--ink);
-	}
-
-	.rsvp-form__check-body small {
-		display: block;
-		color: var(--ink-soft);
-		font-size: 12px;
-	}
-
-	.rsvp-form__check:has(input:checked) .choice__mark {
-		background: var(--pine);
-		border-color: var(--pine);
-		color: #ffffff;
-	}
-
-	.rsvp-form__check:has(input:checked) .choice__mark::after {
-		transform: scale(1);
-		background: currentColor;
-	}
-
-	.rsvp-form__check:has(input:focus-visible) .choice__mark {
-		outline: 1px solid var(--brass);
-		outline-offset: 3px;
 	}
 
 	.rsvp-form__submit {

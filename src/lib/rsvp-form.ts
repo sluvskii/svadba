@@ -6,6 +6,13 @@ export type DrinkOption = {
 	alcohol: boolean;
 };
 
+export type EditableDrink = {
+	id: string;
+	labelRu: string;
+	labelTt?: string;
+	alcohol: boolean;
+};
+
 export type Attendance = 'yes' | 'no';
 
 export type GuestResponse = {
@@ -14,7 +21,7 @@ export type GuestResponse = {
 	children: string;
 	drinks: string[];
 	food: string;
-	transfer: boolean;
+	transfer?: boolean;
 	song: string;
 	comment: string;
 	submittedAt: string;
@@ -60,8 +67,6 @@ export const rsvpForm = {
 		'Аллергии, халяль, вегетарианское меню...',
 		'Аллергияләр, хәләл, вегетариан меню...'
 	),
-	transfer: t('Нужен трансфер', 'Трансфер кирәк'),
-	transferHint: t('Мы поможем добраться', 'Барырга ярдәм итәбез'),
 	song: t('Песня, под которую вы точно выйдете танцевать', 'Сез билгеле бии торган җыр'),
 	songPlaceholder: t('Название или исполнитель', 'Исеме яки башкаручы'),
 	comment: t('Пожелание или вопрос', 'Теләк яки сорау'),
@@ -87,13 +92,66 @@ export const rsvpForm = {
 	nameRequired: t('Напишите, пожалуйста, ваше имя.', 'Зинһар, исемегезне языгыз.')
 };
 
-export const drinkOptions: DrinkOption[] = [
+export const defaultDrinkOptions: DrinkOption[] = [
 	{ id: 'red-wine', label: t('Красное вино', 'Кызыл шәраб'), alcohol: true },
 	{ id: 'white-wine', label: t('Белое вино', 'Ак шәраб'), alcohol: true },
 	{ id: 'champagne', label: t('Шампанское', 'Шампан'), alcohol: true },
 	{ id: 'vodka', label: t('Водка', 'Водка'), alcohol: true },
-	{ id: 'cognac', label: t('Коньяк', 'Коньяк'), alcohol: true },
-	{ id: 'whiskey', label: t('Виски', 'Виски'), alcohol: true },
-	{ id: 'soft', label: t('Безалкогольные', 'Алкогольсез'), alcohol: false },
+	{ id: 'soft', label: t('Безалкогольные напитки', 'Алкогольсез эчемлекләр'), alcohol: false },
 	{ id: 'none', label: t('Не пью алкоголь', 'Алкоголь эчмим'), alcohol: false }
 ];
+
+export const defaultEditableDrinks: EditableDrink[] = [
+	{ id: 'red-wine', labelRu: 'Красное вино', labelTt: 'Кызыл шәраб', alcohol: true },
+	{ id: 'white-wine', labelRu: 'Белое вино', labelTt: 'Ак шәраб', alcohol: true },
+	{ id: 'champagne', labelRu: 'Шампанское', labelTt: 'Шампан', alcohol: true },
+	{ id: 'vodka', labelRu: 'Водка', labelTt: 'Водка', alcohol: true },
+	{ id: 'soft', labelRu: 'Безалкогольные напитки', labelTt: 'Алкогольсез эчемлекләр', alcohol: false },
+	{ id: 'none', labelRu: 'Не пью алкоголь', labelTt: 'Алкоголь эчмим', alcohol: false }
+];
+
+export function parseDrinkOptions(raw: unknown): DrinkOption[] {
+	if (!Array.isArray(raw) || raw.length === 0) {
+		return defaultDrinkOptions;
+	}
+	const list: DrinkOption[] = [];
+	for (let i = 0; i < raw.length; i++) {
+		const item = raw[i];
+		if (!item || typeof item !== 'object') continue;
+		const d = item as Record<string, unknown>;
+		const labelRu = String(d.labelRu ?? d.name ?? '').trim();
+		if (!labelRu) continue;
+		const labelTt = String(d.labelTt ?? '').trim() || labelRu;
+		const rawId = String(d.id ?? '').trim();
+		const id = rawId || `drink-${i + 1}`;
+		const alcohol = Boolean(d.alcohol);
+		list.push({
+			id,
+			label: t(labelRu, labelTt),
+			alcohol
+		});
+	}
+	return list.length > 0 ? list : defaultDrinkOptions;
+}
+
+export function parseEditableDrinks(raw: unknown): EditableDrink[] {
+	if (!Array.isArray(raw) || raw.length === 0) {
+		return defaultEditableDrinks;
+	}
+	const list: EditableDrink[] = [];
+	for (let i = 0; i < raw.length; i++) {
+		const item = raw[i];
+		if (!item || typeof item !== 'object') continue;
+		const d = item as Record<string, unknown>;
+		const labelRu = String(d.labelRu ?? d.name ?? '').trim();
+		if (!labelRu) continue;
+		const labelTt = String(d.labelTt ?? '').trim();
+		const rawId = String(d.id ?? '').trim();
+		const id = rawId || `drink-${i + 1}`;
+		const alcohol = Boolean(d.alcohol);
+		list.push({ id, labelRu, labelTt, alcohol });
+	}
+	return list.length > 0 ? list : defaultEditableDrinks;
+}
+
+export const drinkOptions: DrinkOption[] = defaultDrinkOptions;
