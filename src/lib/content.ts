@@ -122,8 +122,8 @@ export const content = {
 			'Нефтекамск, Комсомольский проспекты, 33А'
 		),
 		note: t(
-			'Начало церемонии в 14:20. Мы будем ждать вас.',
-			'Тантана башлануы 14:20дә. Сезне көтәбез.'
+			'Будем очень рады разделить этот особенный день вместе с вами.',
+			'Бу бәйрәмне сезнең белән бергә уздыруыбызга бик шатбыз.'
 		),
 		mapLabel: t('Открыть в Яндекс.Картах', 'Яндекс.Карталарда ачу'),
 		calendarAdd: t('Добавить в календарь', 'Календарьга өстәргә'),
@@ -399,17 +399,15 @@ export function applyContentOverride(ov: Record<string, unknown> | null | undefi
 	}
 	if (mapUrl) content.wedding.mapUrl = mapUrl;
 
-	// Сбор гостей и расписание программы
+	// Расписание программы вечера (блок «Как пройдёт вечер»)
 	const gatheringVal = str('gatheringTime');
 	const ceremonyVal = str('ceremonyTime') || '14:20';
 	const dinnerVal = str('dinnerTime') || '18:00';
 	const endVal = str('endTime') || '00:00';
 
-	const newSchedule: { label: Localized; value: string }[] = [];
 	const newTimeline: TimelineItem[] = [];
 
 	if (gatheringVal) {
-		newSchedule.push({ label: t('Сбор гостей', 'Кунаклар җыенуы'), value: gatheringVal });
 		newTimeline.push({
 			time: gatheringVal,
 			title: t('Сбор гостей', 'Кунаклар җыенуы'),
@@ -418,42 +416,26 @@ export function applyContentOverride(ov: Record<string, unknown> | null | undefi
 				'Рәхим итегез! Танышырга һәм бәйрәмгә көйләнергә вакыт.'
 			)
 		});
-		content.details.time = gatheringVal;
-		content.details.note = t(
-			`Сбор гостей в ${gatheringVal}. Мы будем ждать вас.`,
-			`Кунаклар ${gatheringVal}да җыела. Сезне көтәбез.`
-		);
-	} else {
-		// Сбор гостей убран пользователем
-		content.details.time = ceremonyVal;
-		content.details.note = t(
-			`Начало церемонии в ${ceremonyVal}. Мы будем ждать вас.`,
-			`Тантана башлануы ${ceremonyVal}да. Сезне көтәбез.`
-		);
 	}
 
-	newSchedule.push({ label: t('Церемония регистрации', 'Тантаналы теркәү'), value: ceremonyVal });
 	newTimeline.push({
 		time: ceremonyVal,
 		title: t('Церемония регистрации', 'Тантаналы теркәү'),
 		text: t('Самый волнительный момент вечера.', 'Кичнең иң дулкынландыргыч мизгеле.')
 	});
 
-	newSchedule.push({ label: t('Начало банкета', 'Банкет башлануы'), value: dinnerVal });
 	newTimeline.push({
 		time: dinnerVal,
 		title: t('Начало банкета', 'Банкет башлануы'),
 		text: t('Время за большим столом, тёплых слов и тостов.', 'Зур өстәл артында җылы сүзләр һәм тостлар вакыты.')
 	});
 
-	newSchedule.push({ label: t('Завершение вечера', 'Кич тәмамлануы'), value: endVal });
 	newTimeline.push({
 		time: endVal,
 		title: t('Завершение вечера', 'Кич тәмамлануы'),
 		text: t('Спасибо, что разделили с нами этот день.', 'Бу көнне безнең белән бүлешкәнегез өчен рәхмәт.')
 	});
 
-	content.details.schedule = newSchedule;
 	content.timeline.items = newTimeline;
 
 	const invitationTitle = loc('invitationTitle');

@@ -65,8 +65,6 @@
 				<Reveal delay={140}>
 					<div class="details__meta">
 						<span>{pick(content.details.weekday)}</span>
-						<span class="details__meta-line" aria-hidden="true"></span>
-						<span>{content.details.time}</span>
 					</div>
 					<p class="details__note">{pick(content.details.note)}</p>
 				</Reveal>
@@ -103,17 +101,6 @@
 								<path d="M2 7h12M5 1v3M11 1v3" stroke="currentColor" stroke-width="1.1" />
 							</svg>
 						</button>
-					</div>
-				</Reveal>
-
-				<Reveal delay={240}>
-					<div class="details__schedule">
-						{#each content.details.schedule as item (item.value + pick(item.label))}
-							<div class="details__schedule-item">
-								<span>{pick(item.label)}</span>
-								<strong>{item.value}</strong>
-							</div>
-						{/each}
 					</div>
 				</Reveal>
 			</div>
@@ -256,12 +243,6 @@
 		color: var(--brass-light);
 	}
 
-	.details__meta-line {
-		width: 24px;
-		height: 1px;
-		background: var(--line-light);
-	}
-
 	.details__note {
 		max-width: 34ch;
 		margin-top: 18px;
@@ -310,40 +291,6 @@
 		cursor: pointer;
 		font: inherit;
 		text-align: left;
-	}
-
-	.details__schedule {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 0;
-		margin-top: clamp(36px, 5vw, 54px);
-		border-top: 1px solid var(--line-light);
-		border-left: 1px solid var(--line-light);
-	}
-
-	.details__schedule-item {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		padding: 16px 18px;
-		border-right: 1px solid var(--line-light);
-		border-bottom: 1px solid var(--line-light);
-	}
-
-	.details__schedule-item span {
-		font-size: 8px;
-		font-weight: 700;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
-		color: rgba(247, 242, 233, 0.52);
-	}
-
-	.details__schedule-item strong {
-		font-family: var(--serif);
-		font-size: 24px;
-		font-weight: 400;
-		line-height: 1.1;
-		color: var(--paper);
 	}
 
 	.details__map-card {
@@ -507,10 +454,6 @@
 
 		.details__day {
 			font-size: 126px;
-		}
-
-		.details__schedule {
-			grid-template-columns: minmax(0, 1fr);
 		}
 
 		.details__map-card {
