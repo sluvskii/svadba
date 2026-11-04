@@ -21,7 +21,8 @@
 	--line-light: rgba(247, 242, 233, 0.22);
 	--danger: #8a3d32;
 
-	--serif: 'Cormorant Garamond Variable', 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+	--serif: 'Playfair Display Variable', 'Playfair Display', Georgia, 'Times New Roman', serif;
+	--font-script: 'Marck Script', 'Segoe Script', cursive;
 	--sans: 'Manrope Variable', 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
 	--max: 1280px;

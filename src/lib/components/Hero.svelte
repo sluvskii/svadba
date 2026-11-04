@@ -6,6 +6,7 @@
 	import Monogram from './Monogram.svelte';
 	import Ornament from './Ornament.svelte';
 	import Reveal from './Reveal.svelte';
+	import Snow from './Snow.svelte';
 
 	type Props = {
 		inviteHref?: string;
@@ -19,6 +20,7 @@
 
 	<div class="hero__frame" aria-hidden="true"></div>
 	<div class="hero__watermark" aria-hidden="true">17</div>
+	<Snow />
 
 	<div class="hero__inner shell">
 		<div class="hero__copy">
@@ -43,7 +45,7 @@
 			</Reveal>
 
 			<Reveal delay={240}>
-				<p class="hero__note">{pick(content.hero.note)}</p>
+				<p class="hero__note hero__note--script">{pick(content.hero.note)}</p>
 			</Reveal>
 
 			<Reveal delay={300}>
@@ -69,7 +71,7 @@
 				<div class="hero__seal">
 					<Monogram size={92} />
 				</div>
-				<span class="hero__side-date" aria-hidden="true">17 В· 12 В· 2026</span>
+				<span class="hero__side-date" aria-hidden="true">17 · 12 · 2026</span>
 			</div>
 		</Reveal>
 	</div>
@@ -189,6 +191,15 @@
 		font-size: clamp(15px, 1.2vw, 17px);
 		line-height: 1.72;
 		color: var(--ink-soft);
+	}
+
+	/* Тёплая рукописная строка поверх типографики */
+	.hero__note--script {
+		max-width: 24ch;
+		font-family: var(--font-script);
+		font-size: clamp(22px, 2.2vw, 30px);
+		line-height: 1.35;
+		color: var(--pine);
 	}
 
 	.hero__actions {

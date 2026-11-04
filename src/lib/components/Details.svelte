@@ -7,6 +7,41 @@
 	// Фотография ресторана загружается через админку (Тексты → Фото ресторана).
 	// Пока фото не загружено — показываем декоративную графику.
 	let photoOk = $state(true);
+
+	function addToCalendar() {
+		const title = 'Свадьба Алины и Камиля';
+		const venue = pick(content.details.venue);
+		const address = pick(content.details.address);
+		const description = `${title}\\n${venue}, ${address}`;
+		const ics = [
+			'BEGIN:VCALENDAR',
+			'VERSION:2.0',
+			'PRODID:-//Alina and Kamil Wedding//RU',
+			'CALSCALE:GREGORIAN',
+			'METHOD:PUBLISH',
+			'BEGIN:VEVENT',
+			'UID:wedding-alina-kamil-20261217@svadba',
+			'DTSTAMP:20261104T000000Z',
+			'DTSTART:20261217T090000Z',
+			'DTEND:20261217T180000Z',
+			`SUMMARY:${title}`,
+			`DESCRIPTION:${description}`,
+			`LOCATION:${venue}, ${address}`,
+			'STATUS:CONFIRMED',
+			'END:VEVENT',
+			'END:VCALENDAR'
+		].join('\r\n');
+
+		const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = 'wedding-alina-kamil.ics';
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
+	}
 </script>
 
 <section class="section section--pine details" id="details">
@@ -45,17 +80,30 @@
 				<Reveal delay={180}>
 					<h2 class="display details__venue">{pick(content.details.venue)}</h2>
 					<p class="details__address">{pick(content.details.address)}</p>
-					<a
-						class="link-line details__map-link"
-						href={content.wedding.mapUrl}
-						target="_blank"
-						rel="noreferrer"
-					>
-						<span>{pick(content.details.mapLabel)}</span>
-						<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-							<path d="M1 8h13M9 3l5 5-5 5" stroke="currentColor" stroke-width="1.1" />
-						</svg>
-					</a>
+					<div class="details__links">
+						<a
+							class="link-line details__link-item"
+							href={content.wedding.mapUrl}
+							target="_blank"
+							rel="noreferrer"
+						>
+							<span>{pick(content.details.mapLabel)}</span>
+							<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+								<path d="M1 8h13M9 3l5 5-5 5" stroke="currentColor" stroke-width="1.1" />
+							</svg>
+						</a>
+						<button
+							type="button"
+							class="link-line details__link-item details__calendar-btn"
+							onclick={addToCalendar}
+						>
+							<span>{pick(content.details.calendarAdd)}</span>
+							<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+								<rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.1" />
+								<path d="M2 7h12M5 1v3M11 1v3" stroke="currentColor" stroke-width="1.1" />
+							</svg>
+						</button>
+					</div>
 				</Reveal>
 
 				<Reveal delay={240}>
@@ -242,9 +290,26 @@
 		color: rgba(247, 242, 233, 0.78);
 	}
 
-	.details__map-link {
+	.details__links {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 24px;
 		margin-top: 26px;
+	}
+
+	.details__link-item {
 		color: var(--brass-light);
+	}
+
+	.details__calendar-btn {
+		background: none;
+		border: none;
+		padding: 0;
+		margin: 0;
+		cursor: pointer;
+		font: inherit;
+		text-align: left;
 	}
 
 	.details__schedule {

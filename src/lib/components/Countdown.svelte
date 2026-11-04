@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { content } from '#lib/content.js';
 	import { pick } from '#lib/i18n.svelte.js';
 
@@ -32,9 +31,11 @@
 </script>
 
 <div class="countdown" aria-label="До свадьбы осталось">
-	{#each units as unit, index (index)}
+	{#each units as unit, index (`${index}-${now ? unit.value : 'x'}`)}
 		<div class="countdown__unit">
-			<span class="countdown__value">{now ? pad(unit.value) : '--'}</span>
+			<span class="countdown__value">
+				{now ? pad(unit.value) : '--'}
+			</span>
 			<span class="countdown__label">{pick(unit.label)}</span>
 		</div>
 	{/each}
@@ -70,12 +71,29 @@
 	}
 
 	.countdown__value {
+		display: inline-block;
 		font-family: var(--serif);
 		font-size: clamp(28px, 3.2vw, 42px);
 		font-weight: 400;
 		line-height: 0.9;
 		letter-spacing: 0.02em;
 		font-variant-numeric: tabular-nums;
+	}
+
+	/* Мягкое «перелистывание»: при смене цифра всплывает снизу */
+	.countdown__value {
+		animation: digit-in 0.45s var(--ease);
+	}
+
+	@keyframes digit-in {
+		from {
+			opacity: 0;
+			transform: translateY(0.35em);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
 	}
 
 	.countdown__label {
@@ -101,6 +119,12 @@
 
 		.countdown__value {
 			font-size: 30px;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.countdown__value {
+			animation: none;
 		}
 	}
 </style>

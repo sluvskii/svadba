@@ -2,10 +2,14 @@
 	import '@fontsource-variable/cormorant-garamond';
 	import '@fontsource-variable/cormorant-garamond/wght-italic.css';
 	import '@fontsource-variable/manrope';
+	import '@fontsource-variable/playfair-display';
+	import '@fontsource-variable/playfair-display/wght-italic.css';
+	import '@fontsource/marck-script';
 	import '../app.css';
 	import { onMount } from 'svelte';
 	import { initLang } from '#lib/i18n.svelte.js';
 	import favicon from '#lib/assets/favicon.svg';
+	import ScrollProgress from '#lib/components/ScrollProgress.svelte';
 	import type { LayoutProps } from './$types';
 
 	let { children }: LayoutProps = $props();
@@ -30,6 +34,7 @@
 	/>
 </svelte:head>
 
+<ScrollProgress />
 <a class="skip-link" href="#main">К содержанию</a>
 
 {@render children()}
