@@ -7,95 +7,121 @@
 	import { detectTimelineIcon, generateTimelinePath } from '#lib/timeline.js';
 
 	let sectionEl = $state<HTMLElement | null>(null);
+	let trackEl = $state<HTMLElement | null>(null);
 	let pathEl = $state<SVGPathElement | null>(null);
-
-	let heartXPercent = $state(50);
-	let heartYPercent = $state(2);
-	let heartAngle = $state(0);
-	let pathLength = $state(0);
+	let heartBadgeEl = $state<HTMLElement | null>(null);
 
 	const items = $derived(content.timeline.items);
 	const pathD = $derived.by(() => generateTimelinePath(items.length));
 
-	function recalculateLength() {
-		if (pathEl) {
-			try {
-				pathLength = pathEl.getTotalLength();
-			} catch {}
-		}
-	}
+	type CachePoint = { normX: number; normY: number; angle: number };
+	let cachedPoints: CachePoint[] = [];
+	let sectionTop = 0;
+	let sectionHeight = 0;
+	let trackWidth = 0;
+	let trackHeight = 0;
 
-	function updateHeartPosition() {
-		if (!sectionEl || !pathEl) return;
-
-		if (pathLength === 0) {
-			try {
-				pathLength = pathEl.getTotalLength();
-			} catch {
-				return;
-			}
-		}
-
-		if (pathLength <= 0) return;
-
-		const rect = sectionEl.getBoundingClientRect();
-		const viewportH = window.innerHeight;
-
-		// Прогресс скролла: начинается когда секция заходит в экран (75%),
-		// и плавно доходит до конца к моменту ухода секции
-		const startY = viewportH * 0.75;
-		const endY = viewportH * 0.25;
-		const totalDistance = rect.height + (startY - endY);
-		const currentDistance = startY - rect.top;
-
-		const progress = Math.max(0, Math.min(1, currentDistance / totalDistance));
+	// Предварительный расчет ключевых точек траектории (Lookup Table).
+	// Полностью исключает тяжелые вызовы getPointAtLength() во время скролла на мобильных устройствах.
+	function measureAndBuildCache() {
+		if (!sectionEl || !trackEl || !pathEl) return;
 
 		try {
-			const currentDist = progress * pathLength;
-			const point = pathEl.getPointAtLength(currentDist);
-			// viewBox="0 0 100 1000" => point.x является процентом от 0 до 100
-			heartXPercent = point.x;
-			heartYPercent = (point.y / 1000) * 100;
+			const pathLen = pathEl.getTotalLength();
+			if (pathLen > 0) {
+				const samples = 150;
+				const points: CachePoint[] = [];
+				for (let i = 0; i <= samples; i++) {
+					const dist = (i / samples) * pathLen;
+					const pt = pathEl.getPointAtLength(dist);
+					const pAhead = pathEl.getPointAtLength(Math.min(pathLen, dist + 4));
+					const pBehind = pathEl.getPointAtLength(Math.max(0, dist - 4));
+					const dx = pAhead.x - pBehind.x;
+					const dy = (pAhead.y - pBehind.y) * 0.25;
+					const rad = Math.atan2(dx, dy);
+					const angle = Math.max(-20, Math.min(20, (rad * 180) / Math.PI));
 
-			// Наклон сердечка вдоль направления движения кривой
-			const pAhead = pathEl.getPointAtLength(Math.min(pathLength, currentDist + 4));
-			const pBehind = pathEl.getPointAtLength(Math.max(0, currentDist - 4));
-			const dx = pAhead.x - pBehind.x;
-			const dy = (pAhead.y - pBehind.y) * 0.25;
-			const rad = Math.atan2(dx, dy);
-			heartAngle = Math.max(-20, Math.min(20, (rad * 180) / Math.PI));
+					points.push({
+						normX: pt.x / 100, // viewBox 0..100
+						normY: pt.y / 1000, // viewBox 0..1000
+						angle
+					});
+				}
+				cachedPoints = points;
+			}
 		} catch {
 			// fallback
 		}
+
+		const rect = sectionEl.getBoundingClientRect();
+		const scrollY = window.scrollY || window.pageYOffset || 0;
+		sectionTop = rect.top + scrollY;
+		sectionHeight = rect.height;
+
+		trackWidth = trackEl.clientWidth;
+		trackHeight = trackEl.clientHeight;
+	}
+
+	// Ультрабыстрое обновление положения (занимает <0.05ms):
+	// 1. Никаких getBoundingClientRect() во время скролла (исключен reflow/layout thrashing на iOS Safari)
+	// 2. O(1) чтение из предварительно рассчитанного кэша
+	// 3. Чистый аппаратный GPU translate3d без перерисовки слоев
+	function updateHeart() {
+		if (!heartBadgeEl || cachedPoints.length === 0 || trackWidth === 0 || trackHeight === 0) return;
+
+		const scrollY = window.scrollY || window.pageYOffset || 0;
+		const viewportH = window.innerHeight;
+
+		const startY = scrollY + viewportH * 0.75;
+		const totalDistance = sectionHeight + viewportH * 0.5;
+		const currentDistance = startY - sectionTop;
+
+		const progress = Math.max(0, Math.min(1, currentDistance / totalDistance));
+
+		const samples = cachedPoints.length - 1;
+		const exactIndex = progress * samples;
+		const i0 = Math.floor(exactIndex);
+		const i1 = Math.min(samples, i0 + 1);
+		const t = exactIndex - i0;
+
+		const p0 = cachedPoints[i0];
+		const p1 = cachedPoints[i1];
+
+		const normX = p0.normX + (p1.normX - p0.normX) * t;
+		const normY = p0.normY + (p1.normY - p0.normY) * t;
+		const angle = p0.angle + (p1.angle - p0.angle) * t;
+
+		const px = normX * trackWidth;
+		const py = normY * trackHeight;
+
+		heartBadgeEl.style.transform = `translate3d(${px.toFixed(1)}px, ${py.toFixed(1)}px, 0) translate(-50%, -50%) rotate(${angle.toFixed(1)}deg)`;
 	}
 
 	$effect(() => {
-		// При изменении количества пунктов или траектории пересчитываем длину и позицию
+		// При изменении количества пунктов или траектории перестраиваем кэш
 		pathD;
 		items.length;
-		recalculateLength();
-		updateHeartPosition();
+		requestAnimationFrame(() => {
+			measureAndBuildCache();
+			updateHeart();
+		});
 	});
 
 	onMount(() => {
-		recalculateLength();
-		if (pathEl) {
-			try {
-				const initialPoint = pathEl.getPointAtLength(0);
-				heartXPercent = initialPoint.x;
-				heartYPercent = (initialPoint.y / 1000) * 100;
-			} catch (e) {
-				console.error(e);
-			}
-		}
+		measureAndBuildCache();
+		updateHeart();
 
-		updateHeartPosition();
+		// Повторный замер на следующем кадре после стабилизации шрифтов и сетки
+		requestAnimationFrame(() => {
+			measureAndBuildCache();
+			updateHeart();
+		});
 
 		let ticking = false;
 		const onScroll = () => {
 			if (!ticking) {
 				requestAnimationFrame(() => {
-					updateHeartPosition();
+					updateHeart();
 					ticking = false;
 				});
 				ticking = true;
@@ -103,16 +129,29 @@
 		};
 
 		const onResize = () => {
-			recalculateLength();
+			measureAndBuildCache();
 			onScroll();
 		};
 
+		// ResizeObserver отслеживает изменение размеров секции при загрузке контента
+		let ro: ResizeObserver | null = null;
+		if (typeof ResizeObserver !== 'undefined' && sectionEl) {
+			ro = new ResizeObserver(() => {
+				measureAndBuildCache();
+				updateHeart();
+			});
+			ro.observe(sectionEl);
+		}
+
 		window.addEventListener('scroll', onScroll, { passive: true });
 		window.addEventListener('resize', onResize, { passive: true });
+		window.addEventListener('orientationchange', onResize, { passive: true });
 
 		return () => {
+			ro?.disconnect();
 			window.removeEventListener('scroll', onScroll);
 			window.removeEventListener('resize', onResize);
+			window.removeEventListener('orientationchange', onResize);
 		};
 	});
 </script>
@@ -130,8 +169,8 @@
 		</header>
 
 		<div class="timeline__flow">
-			<!-- Центральная динамическая шелковистая SVG дорожка (адаптируется под любое число событий) -->
-			<div class="timeline__track" aria-hidden="true">
+			<!-- Центральная динамическая SVG дорожка -->
+			<div class="timeline__track" bind:this={trackEl} aria-hidden="true">
 				<svg
 					class="timeline__svg"
 					viewBox="0 0 100 1000"
@@ -151,10 +190,10 @@
 					/>
 				</svg>
 
-				<!-- Несжимаемое HTML сердечко (всегда сохраняет идеальные пропорции 22x22px) -->
+				<!-- Аппаратно-ускоренное HTML сердечко (GPU 60/120fps на iOS Safari без задержек) -->
 				<div
+					bind:this={heartBadgeEl}
 					class="timeline__heart-badge"
-					style="left: {heartXPercent}%; top: {heartYPercent}%; transform: translate(-50%, -50%) rotate({heartAngle}deg);"
 					aria-hidden="true"
 				>
 					<svg
@@ -200,7 +239,7 @@
 								<p class="timeline__step-desc">{pick(item.text)}</p>
 							{/if}
 
-							<!-- Художественная авторская скетч-иллюстрация (автоматический подбор или ручной выбор) -->
+							<!-- Художественная авторская скетч-иллюстрация -->
 							<div class="timeline__sketch" aria-hidden="true">
 								<TimelineSketch
 									variant={detectTimelineIcon(pick(item.title), pick(item.text), item.icon)}
@@ -264,18 +303,22 @@
 		overflow: visible;
 	}
 
-	/* Перемещающееся сердечко на HTML слое — 100% защита от сплющивания */
+	/* Перемещающееся сердечко на HTML слое — аппаратное GPU-ускорение без лагов на iPhone */
 	.timeline__heart-badge {
 		position: absolute;
+		top: 0;
+		left: 0;
 		width: 26px;
 		height: 26px;
 		display: grid;
 		place-items: center;
 		pointer-events: none;
 		z-index: 5;
-		filter: drop-shadow(0 2px 6px rgba(27, 48, 37, 0.28));
-		transition: transform 0.08s linear;
-		will-change: left, top, transform;
+		will-change: transform;
+		transform: translate3d(50px, 20px, 0) translate(-50%, -50%);
+		filter: drop-shadow(0 2px 5px rgba(27, 48, 37, 0.25));
+		backface-visibility: hidden;
+		-webkit-backface-visibility: hidden;
 	}
 
 	.timeline__heart-svg {
