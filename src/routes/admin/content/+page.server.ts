@@ -42,7 +42,7 @@ export const load: PageServerLoad = async (event) => {
 		city: (override?.city as string) || pick(defaultContent.wedding.city),
 		address: (override?.address as string) || pick(defaultContent.wedding.address),
 		mapUrl: (override?.mapUrl as string) || defaultContent.wedding.mapUrl,
-		gatheringTime: override?.gatheringTime !== undefined ? (override.gatheringTime as string) : '14:00',
+		gatheringTime: typeof override?.gatheringTime === 'string' ? override.gatheringTime : '',
 		ceremonyTime: (override?.ceremonyTime as string) || '14:20',
 		dinnerTime: (override?.dinnerTime as string) || '18:00',
 		endTime: (override?.endTime as string) || '00:00',
