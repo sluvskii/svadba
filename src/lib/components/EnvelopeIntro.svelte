@@ -10,13 +10,13 @@
 
 	let visible = $state(false);
 	let isOpening = $state(false);
-	let isFading = $state(false);
+	let isLaunching = $state(false);
 
 	onMount(() => {
 		const handleOpenEvent = () => {
 			visible = true;
 			isOpening = false;
-			isFading = false;
+			isLaunching = false;
 			document.body.style.overflow = 'hidden';
 		};
 		window.addEventListener('open-wedding-envelope', handleOpenEvent);
@@ -34,23 +34,24 @@
 	});
 
 	function openEnvelope() {
-		if (isOpening || isFading) return;
+		if (isOpening || isLaunching) return;
 
-		// 1. Печать исчезает, и верхний клапан плавно распахивается наверх
+		// 1. Моментально распахиваем клапан конверта
 		isOpening = true;
 
-		// 2. После того как конверт полностью раскрылся — плавный переход к сайту
+		// 2. Через 320мс открытка эффектно вылетает и увеличивается на весь экран,
+		// а конверт падает вниз, плавно переходя в главную страницу сайта
 		setTimeout(() => {
-			isFading = true;
+			isLaunching = true;
 			sessionStorage.setItem('wedding_envelope_opened', '1');
-		}, 1000);
+		}, 320);
 
-		// 3. Полное завершение и освобождение скролла
+		// 3. Полное завершение и передача управления сайту
 		setTimeout(() => {
 			visible = false;
 			document.body.style.overflow = '';
 			if (onClose) onClose();
-		}, 1750);
+		}, 1200);
 	}
 </script>
 
@@ -58,7 +59,7 @@
 	<div
 		class="envelope-screen"
 		class:is-opening={isOpening}
-		class:is-fading={isFading}
+		class:is-launching={isLaunching}
 		role="button"
 		tabindex="0"
 		aria-label="Нажмите, чтобы открыть пригласительный конверт"
@@ -96,7 +97,7 @@
 		</svg>
 
 		<div class="stage">
-			<!-- Сама открытка: высокая, текст полностью виден сверху с большим запасом -->
+			<!-- Сама открытка: вылетает из конверта и разворачивается прямо на зрителя -->
 			<div class="card">
 				<div class="card__inner">
 					<p class="card__line-1">Приглашение на</p>
@@ -107,7 +108,7 @@
 
 			<!-- Конверт -->
 			<div class="envelope">
-				<!-- Задняя внутренняя стенка конверта -->
+				<!-- Задняя стенка конверта -->
 				<div class="envelope__back"></div>
 
 				<!-- Передний карман (складки конверта) -->
@@ -117,9 +118,8 @@
 					<div class="envelope__fold-bottom"></div>
 				</div>
 
-				<!-- Верхний открывающийся клапан (3D поворот наверх) -->
+				<!-- Верхний открывающийся клапан -->
 				<div class="envelope__flap">
-					<!-- Лицевая сторона (смотрит вниз в закрытом состоянии) -->
 					<div class="envelope__flap-face envelope__flap-face--front">
 						<svg class="flap-svg" viewBox="0 0 400 150" preserveAspectRatio="none">
 							<polygon points="0,0 400,0 200,150" fill="#4d6957" />
@@ -134,8 +134,6 @@
 							</defs>
 						</svg>
 					</div>
-
-					<!-- Внутренняя сторона (раскрывается вверх при открытии) -->
 					<div class="envelope__flap-face envelope__flap-face--back">
 						<svg class="flap-svg" viewBox="0 0 400 150" preserveAspectRatio="none">
 							<polygon points="0,150 400,150 200,0" fill="#354a3d" />
@@ -150,7 +148,7 @@
 					</div>
 				</div>
 
-				<!-- Сургучная печать НАЖМИТЕ по центру конверта -->
+				<!-- Сургучная печать НАЖМИТЕ -->
 				<div class="seal">
 					<div class="seal__disc">
 						<span class="seal__text">НАЖМИТЕ</span>
@@ -162,7 +160,7 @@
 {/if}
 
 <style>
-	/* ПОЛНОСТЬЮ НЕПРОЗРАЧНЫЙ ФОН: сайт позади НЕ ВИДЕН */
+	/* ПОЛНОСТЬЮ НЕПРОЗРАЧНЫЙ ФОН */
 	.envelope-screen {
 		position: fixed;
 		inset: 0;
@@ -174,27 +172,30 @@
 		user-select: none;
 		cursor: pointer;
 		outline: none;
-		transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
-			transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
-		will-change: opacity, transform;
+		transition: opacity 0.5s ease 0.65s;
+		will-change: opacity;
 	}
 
-	.envelope-screen.is-fading {
+	.envelope-screen.is-launching {
 		opacity: 0;
-		transform: scale(1.04);
 		pointer-events: none;
 	}
 
-	/* Фоновые декоративные нити */
+	/* Фоновые нити */
 	.bg-art {
 		position: absolute;
 		inset: 0;
 		width: 100%;
 		height: 100%;
 		pointer-events: none;
+		transition: opacity 0.4s ease 0.2s;
 	}
 
-	/* Главная сцена: карточка + конверт */
+	.envelope-screen.is-launching .bg-art {
+		opacity: 0;
+	}
+
+	/* Главная сцена */
 	.stage {
 		position: relative;
 		width: min(88vw, 390px);
@@ -203,12 +204,12 @@
 		flex-direction: column;
 		justify-content: flex-end;
 		align-items: center;
-		perspective: 1400px;
+		perspective: 1200px;
 		transform-style: preserve-3d;
 	}
 
 	/* ─────────────────────────────────────────────────────────────
-	   ОТКРЫТКА: ТЕКСТ ПОЛНОСТЬЮ НАВЕРХУ, БОЛЬШОЙ ОТСТУП ДО КОНВЕРТА
+	   ОТКРЫТКА: ВЫЛЕТАЕТ ИЗ КОНВЕРТА И МАСШТАБИРУЕТСЯ В САЙТ
 	   ───────────────────────────────────────────────────────────── */
 	.card {
 		position: absolute;
@@ -223,6 +224,19 @@
 		padding: 14px;
 		z-index: 2;
 		pointer-events: none;
+		transform-origin: center center;
+		transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+			opacity 0.65s ease-in 0.2s,
+			box-shadow 0.85s ease;
+		will-change: transform, opacity;
+	}
+
+	/* ЭФФЕКТ ВЫЛЕТА В ЭКРАН */
+	.envelope-screen.is-launching .card {
+		transform: translate(-50%, -180px) scale(3.2);
+		opacity: 0;
+		box-shadow: 0 40px 100px rgba(0, 0, 0, 0.35);
+		z-index: 10;
 	}
 
 	.card__inner {
@@ -264,7 +278,7 @@
 	}
 
 	/* ─────────────────────────────────────────────────────────────
-	   КОНВЕРТ: ПЕРЕКРЫВАЕТ ТОЛЬКО НИЖНЮЮ ПУСТУЮ ЧАСТЬ ОТКРЫТКИ
+	   КОНВЕРТ: ПРИ ВЫЛЕТЕ ПАДАЕТ ВНИЗ И ИСЧЕЗАЕТ
 	   ───────────────────────────────────────────────────────────── */
 	.envelope {
 		position: relative;
@@ -273,16 +287,24 @@
 		z-index: 4;
 		box-shadow: 0 24px 50px rgba(35, 52, 42, 0.25);
 		perspective: 1200px;
+		transition: transform 0.7s cubic-bezier(0.55, 0, 1, 0.45),
+			opacity 0.6s ease;
+		will-change: transform, opacity;
 	}
 
-	/* Задняя внутренняя стенка */
+	.envelope-screen.is-launching .envelope {
+		transform: translateY(320px);
+		opacity: 0;
+	}
+
+	/* Задняя стенка */
 	.envelope__back {
 		position: absolute;
 		inset: 0;
 		background: #3a5041;
 	}
 
-	/* Передний карман (складки) */
+	/* Складки кармана */
 	.envelope__pocket {
 		position: absolute;
 		inset: 0;
@@ -315,7 +337,7 @@
 	}
 
 	/* ─────────────────────────────────────────────────────────────
-	   ВЕРХНИЙ КЛАПАН: ЧЕСТНЫЙ 3D РАЗВОРОТ НАВЕРХ
+	   ВЕРХНИЙ КЛАПАН
 	   ───────────────────────────────────────────────────────────── */
 	.envelope__flap {
 		position: absolute;
@@ -325,12 +347,13 @@
 		height: 145px;
 		transform-origin: top center;
 		transform-style: preserve-3d;
-		transition: transform 0.85s cubic-bezier(0.25, 1, 0.5, 1);
+		transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
 		z-index: 7;
 		pointer-events: none;
 	}
 
-	.envelope-screen.is-opening .envelope__flap {
+	.envelope-screen.is-opening .envelope__flap,
+	.envelope-screen.is-launching .envelope__flap {
 		transform: rotateX(180deg);
 		z-index: 1;
 	}
@@ -366,15 +389,16 @@
 		transform: translate(-50%, -50%);
 		z-index: 8;
 		pointer-events: none;
-		transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+		transition: transform 0.2s ease, opacity 0.2s ease;
 	}
 
 	.envelope-screen:hover .seal {
-		transform: translate(-50%, -50%) scale(1.07);
+		transform: translate(-50%, -50%) scale(1.06);
 	}
 
-	.envelope-screen.is-opening .seal {
-		transform: translate(-50%, -50%) scale(1.2);
+	.envelope-screen.is-opening .seal,
+	.envelope-screen.is-launching .seal {
+		transform: translate(-50%, -50%) scale(0.6);
 		opacity: 0;
 	}
 
