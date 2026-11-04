@@ -79,7 +79,7 @@
 						autocomplete="off"
 					/>
 					{#if query}
-						<button class="seating__clear" type="button" onclick={clearSearch} aria-label="Очистить">
+						<button class="seating__clear" type="button" onclick={clearSearch} aria-label={pick(content.seating.clear)}>
 							<svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true">
 								<path d="M3 3l14 14M17 3L3 17" stroke="currentColor" stroke-width="1.2" />
 							</svg>
@@ -90,7 +90,7 @@
 
 			<div class="seating__body">
 				<Reveal kind="left" delay={100} class="seating__plan-wrap">
-					<div class="plan" aria-label="Схема зала">
+					<div class="plan" aria-label={pick(content.seating.planLabel)}>
 						<div class="plan__topline">
 							<span class="tiny muted">{pick(content.details.venue)}</span>
 							<span class="tiny muted">{pick(content.seating.eyebrow)}</span>
@@ -139,7 +139,7 @@
 						{#if normalizedQuery.length >= 2}
 							{#if matches.length}
 								<p class="panel__label">
-									{matches.length === 1 ? pick(content.seating.yourTable) : 'Найдено'}
+									{matches.length === 1 ? pick(content.seating.yourTable) : pick(content.seating.found)}
 								</p>
 								<div class="panel__results">
 									{#each matches.slice(0, 8) as guest (guest.name + guest.table.id)}

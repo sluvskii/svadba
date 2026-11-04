@@ -30,10 +30,10 @@
 	const pad = (value: number) => String(value).padStart(2, '0');
 </script>
 
-<div class="countdown" aria-label="До свадьбы осталось">
+<div class="countdown" aria-label={pick(content.countdown.kicker)}>
 	<div class="countdown__kicker">
 		<span class="countdown__pulse" aria-hidden="true"></span>
-		<span class="countdown__kicker-text">До свадьбы осталось</span>
+		<span class="countdown__kicker-text">{pick(content.countdown.kicker)}</span>
 	</div>
 
 	<div class="countdown__grid">

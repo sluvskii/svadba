@@ -21,17 +21,21 @@
 
 	function validate() {
 		if (!name.trim()) {
-			clientError = 'Пожалуйста, введите ваше имя и фамилию';
+			clientError = pick(content.rsvp.openForm.errorName);
 			return false;
 		}
 		if (!attendance) {
-			clientError = 'Пожалуйста, выберите: сможете ли вы присутствовать';
+			clientError = pick(content.rsvp.openForm.errorAttendance);
 			return false;
 		}
 		clientError = '';
 		return true;
 	}
 </script>
+
+<svelte:head>
+	<title>{pick(content.rsvp.openForm.title)} — {pick(content.footer.names)}</title>
+</svelte:head>
 
 <div class="rsvp-page">
 	<header class="rsvp-page__header">
@@ -62,47 +66,47 @@
 		{#if form?.success}
 			<section class="rsvp-card rsvp-card--success" role="status">
 				<Ornament variant="flower" class="rsvp-card__flower" />
-				<p class="tiny muted rsvp-card__kicker">ОТВЕТ СОХРАНЁН</p>
+				<p class="tiny muted rsvp-card__kicker">{pick(content.rsvp.openForm.successKicker)}</p>
 				<h1 class="display rsvp-card__title">
-					Спасибо, {form.guestName}!
+					{pick(content.rsvp.openForm.successTitle)}, {form.guestName}!
 				</h1>
 				<Ornament variant="divider" class="rsvp-card__divider" />
 				<p class="lead rsvp-card__text">
 					{#if form.attending === 'yes'}
-						Мы очень рады и будем с нетерпением ждать вас на празднике 17 декабря!
+						{pick(content.rsvp.openForm.successYes)}
 					{:else}
-						Спасибо, что сообщили нам. Нам будет вас не хватать, но мы чувствуем вашу любовь и тепло!
+						{pick(content.rsvp.openForm.successNo)}
 					{/if}
 				</p>
 
 				{#if form.token && form.attending === 'yes'}
 					<div class="rsvp-card__extra-box">
-						<p class="tiny muted">ДЛЯ ДЕТАЛЕЙ</p>
+						<p class="tiny muted">{pick(content.rsvp.openForm.detailsKicker)}</p>
 						<p class="rsvp-card__extra-desc">
-							Хотите уточнить предпочтения по напиткам или посмотреть ваш столик?
+							{pick(content.rsvp.openForm.detailsDesc)}
 						</p>
 						<a class="btn btn--outline rsvp-card__extra-link" href="/invite/{form.token}">
-							Перейти к деталям приглашения →
+							{pick(content.rsvp.openForm.detailsLink)}
 						</a>
 					</div>
 				{/if}
 
 				<div class="rsvp-card__actions">
 					<a class="btn rsvp-card__action-btn" href="/">
-						На главную страницу
+						{pick(content.rsvp.openForm.homeBtn)}
 					</a>
 					<a class="link-line rsvp-card__reset" href="/rsvp">
-						<span>Отправить ещё один ответ</span>
+						<span>{pick(content.rsvp.openForm.resetBtn)}</span>
 					</a>
 				</div>
 			</section>
 		{:else}
 			<section class="rsvp-card">
-				<p class="tiny muted rsvp-card__kicker">ПОДТВЕРЖДЕНИЕ ПРИСУТСТВИЯ</p>
-				<h1 class="display rsvp-card__title">Будете с нами?</h1>
+				<p class="tiny muted rsvp-card__kicker">{pick(content.rsvp.openForm.kicker)}</p>
+				<h1 class="display rsvp-card__title">{pick(content.rsvp.openForm.title)}</h1>
 				<Ornament variant="divider" class="rsvp-card__divider" />
 				<p class="rsvp-card__intro">
-					Пожалуйста, подтвердите присутствие до 1 декабря 2026 года, чтобы мы могли позаботиться о вашем комфорте.
+					{pick(content.rsvp.openForm.intro)}
 				</p>
 
 				<form
@@ -124,7 +128,7 @@
 					<!-- Поле ввода имени -->
 					<div class="rsvp-field">
 						<label class="rsvp-field__label" for="guest-name">
-							Ваше имя и фамилия <span class="rsvp-field__req">*</span>
+							{pick(content.rsvp.openForm.nameLabel)} <span class="rsvp-field__req">*</span>
 						</label>
 						<input
 							class="input rsvp-field__input"
@@ -132,19 +136,19 @@
 							type="text"
 							name="name"
 							bind:value={name}
-							placeholder="Например: Бабушка Рамиля или Ильдар Хакимов"
+							placeholder={pick(content.rsvp.openForm.namePlaceholder)}
 							autocomplete="name"
 							required
 						/>
 						<span class="rsvp-field__hint">
-							Укажите так, как вам привычнее — мы обязательно узнаем вас!
+							{pick(content.rsvp.openForm.nameHint)}
 						</span>
 					</div>
 
 					<!-- Выбор: Приду / Не смогу -->
 					<div class="rsvp-field">
 						<span class="rsvp-field__label">
-							Сможете присутствовать? <span class="rsvp-field__req">*</span>
+							{pick(content.rsvp.openForm.attendanceLabel)} <span class="rsvp-field__req">*</span>
 						</span>
 						<div class="rsvp-choice-grid">
 							<label class="choice-card" class:is-selected={attendance === 'yes'}>
@@ -155,9 +159,13 @@
 									value="yes"
 									bind:group={attendance}
 								/>
-								<span class="choice-card__icon choice-card__icon--yes" aria-hidden="true">✓</span>
-								<span class="choice-card__title">Да, с радостью приду</span>
-								<span class="choice-card__desc">Разделю с вами этот особенный день</span>
+								<span class="choice-card__icon choice-card__icon--yes" aria-hidden="true">
+									<svg viewBox="0 0 20 20" width="16" height="16" fill="none" aria-hidden="true">
+										<path d="M4 10.5L8 14.5L16 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+									</svg>
+								</span>
+								<span class="choice-card__title">{pick(content.rsvp.openForm.yesTitle)}</span>
+								<span class="choice-card__desc">{pick(content.rsvp.openForm.yesDesc)}</span>
 							</label>
 
 							<label class="choice-card" class:is-selected={attendance === 'no'}>
@@ -168,9 +176,13 @@
 									value="no"
 									bind:group={attendance}
 								/>
-								<span class="choice-card__icon choice-card__icon--no" aria-hidden="true">✕</span>
-								<span class="choice-card__title">К сожалению, не смогу</span>
-								<span class="choice-card__desc">Буду мысленно рядом с вами</span>
+								<span class="choice-card__icon choice-card__icon--no" aria-hidden="true">
+									<svg viewBox="0 0 20 20" width="16" height="16" fill="none" aria-hidden="true">
+										<path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+									</svg>
+								</span>
+								<span class="choice-card__title">{pick(content.rsvp.openForm.noTitle)}</span>
+								<span class="choice-card__desc">{pick(content.rsvp.openForm.noDesc)}</span>
 							</label>
 						</div>
 					</div>
@@ -178,7 +190,7 @@
 					<!-- Поле пожелания (необязательно) -->
 					<div class="rsvp-field">
 						<label class="rsvp-field__label" for="guest-comment">
-							Пожелание молодожёнам <span class="rsvp-field__opt">(по желанию)</span>
+							{pick(content.rsvp.openForm.commentLabel)} <span class="rsvp-field__opt">{pick(content.rsvp.openForm.commentOpt)}</span>
 						</label>
 						<textarea
 							class="input rsvp-field__textarea"
@@ -186,26 +198,26 @@
 							name="comment"
 							bind:value={comment}
 							rows="3"
-							placeholder="Пара тёплых слов или важная деталь для нас..."
+							placeholder={pick(content.rsvp.openForm.commentPlaceholder)}
 						></textarea>
 					</div>
 
 					{#if clientError}
 						<p class="rsvp-alert" role="alert">{clientError}</p>
 					{:else if form?.missingName}
-						<p class="rsvp-alert" role="alert">Пожалуйста, введите ваше имя.</p>
+						<p class="rsvp-alert" role="alert">{pick(content.rsvp.openForm.errorName)}</p>
 					{:else if form?.missingAttendance}
-						<p class="rsvp-alert" role="alert">Пожалуйста, укажите, сможете ли вы присутствовать.</p>
+						<p class="rsvp-alert" role="alert">{pick(content.rsvp.openForm.errorAttendance)}</p>
 					{/if}
 
 					<button class="btn rsvp-submit" type="submit" disabled={submitting}>
-						{submitting ? 'Отправляем...' : 'Отправить ответ'}
+						{submitting ? pick(content.rsvp.openForm.submitting) : pick(content.rsvp.openForm.submit)}
 					</button>
 				</form>
 
 				<footer class="rsvp-card__foot">
 					<p class="tiny muted">
-						Если у вас есть вопросы, вы всегда можете позвонить или написать молодожёнам напрямую.
+						{pick(content.rsvp.openForm.questionsFoot)}
 					</p>
 				</footer>
 			</section>
@@ -474,18 +486,24 @@
 	}
 
 	.choice-card__icon {
-		display: inline-grid;
-		place-items: center;
-		width: 28px;
-		height: 28px;
-		font-size: 16px;
-		font-weight: 700;
-		margin-bottom: 10px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
+		margin-bottom: 12px;
 		border-radius: 50%;
 		border: 1px solid var(--line-strong);
 		background: var(--paper-2);
 		color: var(--ink);
 		transition: all 0.2s var(--ease);
+		flex-shrink: 0;
+	}
+
+	.choice-card__icon svg {
+		display: block;
+		width: 16px;
+		height: 16px;
 	}
 
 	.choice-card.is-selected .choice-card__icon {
@@ -498,7 +516,7 @@
 	}
 
 	.choice-card.is-selected .choice-card__icon--no {
-		color: #9b1c1c;
+		color: #b91c1c;
 	}
 
 	.choice-card__title {

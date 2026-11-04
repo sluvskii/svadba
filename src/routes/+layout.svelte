@@ -7,7 +7,7 @@
 	import '@fontsource/marck-script';
 	import '../app.css';
 	import { onMount } from 'svelte';
-	import { initLang } from '#lib/i18n.svelte.js';
+	import { i18n, initLang } from '#lib/i18n.svelte.js';
 	import favicon from '#lib/assets/favicon.svg';
 	import ScrollProgress from '#lib/components/ScrollProgress.svelte';
 	import type { LayoutProps } from './$types';
@@ -35,6 +35,6 @@
 </svelte:head>
 
 <ScrollProgress />
-<a class="skip-link" href="#main">К содержанию</a>
+<a class="skip-link" href="#main">{i18n.lang === 'tt' ? 'Эчтәлеккә' : 'К содержанию'}</a>
 
 {@render children()}

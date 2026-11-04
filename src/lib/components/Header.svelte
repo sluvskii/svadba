@@ -119,7 +119,7 @@
 			<Ornament variant="divider" class="mobile-menu__ornament" />
 			<div class="mobile-menu__meta">
 				<span>17.12.2026</span>
-				<span>Нефтекамск</span>
+				<span>{pick(content.wedding.city)}</span>
 			</div>
 			<a class="btn" href={inviteHref} onclick={closeMenu}>{pick(ui.rsvp)}</a>
 			<div class="mobile-menu__lang">
