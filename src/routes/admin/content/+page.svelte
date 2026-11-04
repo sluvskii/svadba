@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { TIMELINE_ICONS, detectTimelineIcon } from '#lib/timeline';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
@@ -20,6 +21,49 @@
 	let menuBar = $state(data.menuBar);
 	/* svelte-ignore state_referenced_locally */
 	let drinksList = $state<{ id: string; labelRu: string; labelTt?: string; alcohol: boolean }[]>(data.drinksList);
+	/* svelte-ignore state_referenced_locally */
+	let timelineItems = $state<{ time: string; title: string; text: string; icon: string }[]>(data.timelineItems);
+
+	function addTimelineItem() {
+		if (timelineItems.length >= 14) return;
+		timelineItems = [
+			...timelineItems,
+			{ time: '12:00', title: '', text: '', icon: 'auto' }
+		];
+	}
+
+	function resetTimelineToDefault() {
+		timelineItems = [
+			{
+				time: '14:20',
+				title: 'Церемония регистрации',
+				text: 'Самый волнительный момент вечера.',
+				icon: 'ceremony'
+			},
+			{
+				time: '18:00',
+				title: 'Начало банкета',
+				text: 'Время за большим столом, тёплых слов и тостов.',
+				icon: 'banquet'
+			},
+			{
+				time: '00:00',
+				title: 'Завершение вечера',
+				text: 'Спасибо, что разделили с нами этот день.',
+				icon: 'night'
+			}
+		];
+	}
+
+	function moveTimelineItem(index: number, direction: number) {
+		const targetIndex = index + direction;
+		if (targetIndex < 0 || targetIndex >= timelineItems.length) return;
+		const copy = [...timelineItems];
+		const temp = copy[index];
+		copy[index] = copy[targetIndex];
+		copy[targetIndex] = temp;
+		timelineItems = copy;
+	}
 
 	function addDrink() {
 		if (drinksList.length >= 20) return;
@@ -161,11 +205,12 @@
 		<input type="hidden" name="faqJson" value={JSON.stringify(faqItems)} />
 		<input type="hidden" name="menuJson" value={JSON.stringify(courses)} />
 		<input type="hidden" name="drinksJson" value={JSON.stringify(drinksList)} />
+		<input type="hidden" name="timelineJson" value={JSON.stringify(timelineItems)} />
 		<input type="hidden" name="menuBar" value={menuBar} />
 
 		<!-- Section 1: Date & Venue -->
 		<section class="card">
-			<h2 class="card__title">📅 Дата, время и ресторан</h2>
+			<h2 class="card__title">📅 Дата и место проведения</h2>
 			<div class="form-grid">
 				<div class="field">
 					<label class="field-label" for="dateLong">Отображаемая дата</label>
@@ -191,33 +236,81 @@
 					<label class="field-label" for="mapUrl">Ссылка на Яндекс.Карты</label>
 					<input class="input" id="mapUrl" name="mapUrl" value={data.current.mapUrl} />
 				</div>
+			</div>
+		</section>
 
-				<div class="field">
-					<label class="field-label" for="gatheringTime">Сбор гостей</label>
-					<input
-						class="input"
-						id="gatheringTime"
-						name="gatheringTime"
-						value={data.current.gatheringTime}
-						placeholder="Пусто (скрыть сбор гостей)"
-					/>
-					<p class="form-hint" style="margin-top: 4px;">Оставьте пустым, чтобы убрать сбор гостей из расписания</p>
+		<!-- Section: Program / Schedule (Timeline) -->
+		<section class="card">
+			<div class="card__head" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 12px;">
+				<div>
+					<h2 class="card__title" style="margin: 0; padding: 0; border: 0;">⏰ Программа свадебного дня (Расписание)</h2>
+					<p class="card__hint" style="margin: 4px 0 0;">
+						События отображаются на сайте вдоль извилистой линии с сердечком и авторскими скетчами. Вы можете добавлять любые этапы (сбор гостей, трансфер, фотосессию, торт, салют), менять их порядок и выбирать подходящую иконку или положиться на умный автоподбор.
+					</p>
 				</div>
+				<div style="display: flex; gap: 8px;">
+					<button class="btn btn--outline" type="button" onclick={resetTimelineToDefault}>
+						Сбросить к исходным
+					</button>
+					<button class="btn btn--outline" type="button" onclick={addTimelineItem} disabled={timelineItems.length >= 14}>
+						+ Добавить пункт
+					</button>
+				</div>
+			</div>
 
-				<div class="field">
-					<label class="field-label" for="ceremonyTime">Церемония</label>
-					<input class="input" id="ceremonyTime" name="ceremonyTime" value={data.current.ceremonyTime} />
-				</div>
+			<div style="margin-top: 16px;">
+				{#each timelineItems as item, i}
+					{@const resolvedIcon = item.icon && item.icon !== 'auto' ? item.icon : detectTimelineIcon(item.title, item.text)}
+					{@const iconInfo = TIMELINE_ICONS.find((x) => x.id === resolvedIcon)}
+					<div class="list-row">
+						<div class="list-row__head">
+							<span class="list-row__num">
+								Этап #{i + 1} {iconInfo ? `· ${iconInfo.emoji} ${iconInfo.label}` : ''}
+							</span>
+							<div style="display: flex; gap: 6px; align-items: center;">
+								{#if i > 0}
+									<button class="list-row__remove" type="button" title="Выше" onclick={() => moveTimelineItem(i, -1)}>↑</button>
+								{/if}
+								{#if i < timelineItems.length - 1}
+									<button class="list-row__remove" type="button" title="Ниже" onclick={() => moveTimelineItem(i, 1)}>↓</button>
+								{/if}
+								<button
+									class="list-row__remove"
+									type="button"
+									title="Удалить"
+									onclick={() => (timelineItems = timelineItems.filter((_, j) => j !== i))}
+								>
+									✕ Удалить
+								</button>
+							</div>
+						</div>
 
-				<div class="field">
-					<label class="field-label" for="dinnerTime">Банкет / Ужин</label>
-					<input class="input" id="dinnerTime" name="dinnerTime" value={data.current.dinnerTime} />
-				</div>
-
-				<div class="field">
-					<label class="field-label" for="endTime">Завершение вечера</label>
-					<input class="input" id="endTime" name="endTime" value={data.current.endTime} />
-				</div>
+						<div class="form-grid">
+							<div class="field">
+								<label class="field-label" for="tl-time-{i}">Время *</label>
+								<input class="input" id="tl-time-{i}" bind:value={item.time} placeholder="Например: 14:20 или 13:00-14:00" required />
+							</div>
+							<div class="field">
+								<label class="field-label" for="tl-icon-{i}">Иллюстрация / Скетч</label>
+								<select class="input" id="tl-icon-{i}" bind:value={item.icon}>
+									{#each TIMELINE_ICONS as opt}
+										<option value={opt.id}>
+											{opt.emoji} {opt.label}
+										</option>
+									{/each}
+								</select>
+							</div>
+							<div class="field full-width">
+								<label class="field-label" for="tl-title-{i}">Название события *</label>
+								<input class="input" id="tl-title-{i}" bind:value={item.title} placeholder="Например: Церемония регистрации / Трансфер до площадки" required />
+							</div>
+							<div class="field full-width">
+								<label class="field-label" for="tl-text-{i}">Описание события (подсказка для гостей)</label>
+								<input class="input" id="tl-text-{i}" bind:value={item.text} placeholder="Например: Самый волнительный момент вечера." />
+							</div>
+						</div>
+					</div>
+				{/each}
 			</div>
 		</section>
 

@@ -10,6 +10,7 @@ const MAX_PHOTO_BYTES = 8 * 1024 * 1024; // 8 МБ
 type EditableChapter = { title: string; text: string };
 type EditableFaq = { q: string; a: string };
 type EditableCourse = { label: string; title: string; text: string };
+type EditableTimelineItem = { time: string; title: string; text: string; icon: string };
 
 /** Строки из override или пустая строка. */
 function str(ov: Record<string, unknown> | null, key: string): string {
@@ -89,6 +90,24 @@ export const load: PageServerLoad = async (event) => {
 	const menuBar: string = str(menuRaw ?? ({} as Record<string, unknown>), 'bar') ||
 		pick(defaultContent.menu.bar);
 
+	const timelineRaw = override?.timeline as { items?: EditableTimelineItem[] } | undefined;
+	let timelineItems: EditableTimelineItem[];
+	if (Array.isArray(timelineRaw?.items) && timelineRaw.items.length > 0) {
+		timelineItems = timelineRaw.items.map((it) => ({
+			time: clean(it?.time, 15),
+			title: clean(it?.title, 80),
+			text: clean(it?.text, 300),
+			icon: clean(it?.icon, 30) || 'auto'
+		}));
+	} else {
+		timelineItems = defaultContent.timeline.items.map((it) => ({
+			time: it.time,
+			title: pick(it.title),
+			text: pick(it.text),
+			icon: it.icon || 'auto'
+		}));
+	}
+
 	// Есть ли уже фото ресторана в KV.
 	let photoExists = false;
 	const kv = event.platform?.env?.IMAGES;
@@ -101,7 +120,7 @@ export const load: PageServerLoad = async (event) => {
 		}
 	}
 
-	return { current, storyChapters, faqItems, menuCourses, menuBar, drinksList, photoExists };
+	return { current, storyChapters, faqItems, menuCourses, menuBar, drinksList, timelineItems, photoExists };
 };
 
 export const actions: Actions = {
@@ -137,6 +156,32 @@ export const actions: Actions = {
 					alcohol: Boolean(d?.alcohol)
 				}))
 				.filter((d) => d.labelRu);
+		}
+
+		// Расписание программы дня
+		const timelineList = parseJsonList<EditableTimelineItem>(data.get('timelineJson'), 16);
+		if (timelineList && timelineList.length > 0) {
+			const cleanedTimeline = timelineList
+				.map((it) => ({
+					time: clean(it?.time, 15),
+					title: clean(it?.title, 80),
+					text: clean(it?.text, 300),
+					icon: clean(it?.icon, 30) || 'auto'
+				}))
+				.filter((it) => it.time || it.title);
+
+			payload.timeline = { items: cleanedTimeline };
+
+			// Синхронизация традиционных полей для обратной совместимости
+			const gather = cleanedTimeline.find((it) => /сбор|welcome|встреч/i.test(it.title));
+			const cerem = cleanedTimeline.find((it) => /церемони|регистрац|роспись/i.test(it.title));
+			const dinner = cleanedTimeline.find((it) => /банкет|ужин|застоль/i.test(it.title));
+			const end = cleanedTimeline[cleanedTimeline.length - 1];
+
+			if (gather) payload.gatheringTime = gather.time;
+			if (cerem) payload.ceremonyTime = cerem.time;
+			if (dinner) payload.dinnerTime = dinner.time;
+			if (end) payload.endTime = end.time;
 		}
 
 		// История: главы (title + text). Пустые главы отбрасываются.

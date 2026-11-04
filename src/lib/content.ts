@@ -18,6 +18,7 @@ export type TimelineItem = {
 	time: string;
 	title: Localized;
 	text: Localized;
+	icon?: string;
 };
 
 export type StoryChapter = {
@@ -148,7 +149,8 @@ export const content = {
 				text: t(
 					'Самый волнительный момент вечера.',
 					'Кичнең иң дулкынландыргыч мизгеле.'
-				)
+				),
+				icon: 'ceremony'
 			},
 			{
 				time: '18:00',
@@ -156,7 +158,8 @@ export const content = {
 				text: t(
 					'Время за большим столом, тёплых слов и тостов.',
 					'Зур өстәл артында җылы сүзләр һәм тостлар вакыты.'
-				)
+				),
+				icon: 'banquet'
 			},
 			{
 				time: '00:00',
@@ -164,9 +167,10 @@ export const content = {
 				text: t(
 					'Спасибо, что разделили с нами этот день.',
 					'Бу көнне безнең белән бүлешкәнегез өчен рәхмәт.'
-				)
+				),
+				icon: 'night'
 			}
-		] satisfies TimelineItem[]
+		] as TimelineItem[]
 	},
 
 	dressCode: {
@@ -400,43 +404,57 @@ export function applyContentOverride(ov: Record<string, unknown> | null | undefi
 	if (mapUrl) content.wedding.mapUrl = mapUrl;
 
 	// Расписание программы вечера (блок «Как пройдёт вечер»)
-	const gatheringVal = str('gatheringTime');
-	const ceremonyVal = str('ceremonyTime') || '14:20';
-	const dinnerVal = str('dinnerTime') || '18:00';
-	const endVal = str('endTime') || '00:00';
+	const timelineRaw = ov?.timeline as { items?: Array<{ time?: string; title?: string; text?: string; icon?: string }> } | undefined;
+	if (Array.isArray(timelineRaw?.items) && timelineRaw.items.length > 0) {
+		content.timeline.items = timelineRaw.items.map((it) => ({
+			time: String(it.time || '').trim(),
+			title: t(String(it.title || '').trim()),
+			text: t(String(it.text || '').trim()),
+			icon: it.icon ? String(it.icon).trim() : undefined
+		}));
+	} else {
+		const gatheringVal = str('gatheringTime');
+		const ceremonyVal = str('ceremonyTime') || '14:20';
+		const dinnerVal = str('dinnerTime') || '18:00';
+		const endVal = str('endTime') || '00:00';
 
-	const newTimeline: TimelineItem[] = [];
+		const newTimeline: TimelineItem[] = [];
 
-	if (gatheringVal) {
+		if (gatheringVal) {
+			newTimeline.push({
+				time: gatheringVal,
+				title: t('Сбор гостей', 'Кунаклар җыенуы'),
+				text: t(
+					'Добро пожаловать! Время познакомиться и настроиться на праздник.',
+					'Рәхим итегез! Танышырга һәм бәйрәмгә көйләнергә вакыт.'
+				),
+				icon: 'gathering'
+			});
+		}
+
 		newTimeline.push({
-			time: gatheringVal,
-			title: t('Сбор гостей', 'Кунаклар җыенуы'),
-			text: t(
-				'Добро пожаловать! Время познакомиться и настроиться на праздник.',
-				'Рәхим итегез! Танышырга һәм бәйрәмгә көйләнергә вакыт.'
-			)
+			time: ceremonyVal,
+			title: t('Церемония регистрации', 'Тантаналы теркәү'),
+			text: t('Самый волнительный момент вечера.', 'Кичнең иң дулкынландыргыч мизгеле.'),
+			icon: 'ceremony'
 		});
+
+		newTimeline.push({
+			time: dinnerVal,
+			title: t('Начало банкета', 'Банкет башлануы'),
+			text: t('Время за большим столом, тёплых слов и тостов.', 'Зур өстәл артында җылы сүзләр һәм тостлар вакыты.'),
+			icon: 'banquet'
+		});
+
+		newTimeline.push({
+			time: endVal,
+			title: t('Завершение вечера', 'Кич тәмамлануы'),
+			text: t('Спасибо, что разделили с нами этот день.', 'Бу көнне безнең белән бүлешкәнегез өчен рәхмәт.'),
+			icon: 'night'
+		});
+
+		content.timeline.items = newTimeline;
 	}
-
-	newTimeline.push({
-		time: ceremonyVal,
-		title: t('Церемония регистрации', 'Тантаналы теркәү'),
-		text: t('Самый волнительный момент вечера.', 'Кичнең иң дулкынландыргыч мизгеле.')
-	});
-
-	newTimeline.push({
-		time: dinnerVal,
-		title: t('Начало банкета', 'Банкет башлануы'),
-		text: t('Время за большим столом, тёплых слов и тостов.', 'Зур өстәл артында җылы сүзләр һәм тостлар вакыты.')
-	});
-
-	newTimeline.push({
-		time: endVal,
-		title: t('Завершение вечера', 'Кич тәмамлануы'),
-		text: t('Спасибо, что разделили с нами этот день.', 'Бу көнне безнең белән бүлешкәнегез өчен рәхмәт.')
-	});
-
-	content.timeline.items = newTimeline;
 
 	const invitationTitle = loc('invitationTitle');
 	const invitationSignature = loc('invitationSignature');
