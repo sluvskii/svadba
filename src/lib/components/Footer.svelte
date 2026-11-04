@@ -3,6 +3,12 @@
 	import { pick } from '#lib/i18n.svelte.js';
 	import Monogram from './Monogram.svelte';
 	import Ornament from './Ornament.svelte';
+
+	function openEnvelope() {
+		if (typeof window !== 'undefined') {
+			window.dispatchEvent(new CustomEvent('open-wedding-envelope'));
+		}
+	}
 </script>
 
 <footer class="footer">
@@ -21,6 +27,9 @@
 
 		<div class="footer__bottom">
 			<span>© 2026</span>
+			<button class="footer__envelope-btn" type="button" onclick={openEnvelope}>
+				Конверт 💌
+			</button>
 			<a href="#top">{pick(content.footer.top)} ↑</a>
 		</div>
 	</div>
@@ -58,9 +67,9 @@
 	}
 
 	:global(.footer__ornament) {
-		width: min(100%, 260px);
+		width: 140px;
+		color: var(--brass-light);
 		margin-inline: auto;
-		color: var(--sage);
 		opacity: 0.7;
 	}
 
@@ -68,37 +77,40 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 10px;
-		padding-block: clamp(36px, 5vw, 56px);
 		text-align: center;
+		margin-top: 36px;
 	}
 
 	.footer__names {
-		margin-top: 12px;
-		font-size: clamp(40px, 5vw, 66px);
-		line-height: 1;
+		margin-top: 26px;
+		font-size: clamp(40px, 6vw, 76px);
+		color: var(--paper);
 	}
 
 	.footer__date {
-		font-size: 9px;
-		font-weight: 700;
-		letter-spacing: 0.24em;
+		font-family: var(--sans);
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.28em;
 		text-transform: uppercase;
-		color: var(--sage-light);
+		color: var(--brass-light);
+		margin-top: 18px;
 	}
 
 	.footer__place {
-		font-size: 11px;
-		line-height: 1.5;
-		color: rgba(247, 242, 233, 0.62);
+		font-family: var(--serif);
+		font-style: italic;
+		font-size: 1.15rem;
+		color: rgba(247, 242, 233, 0.72);
+		margin-top: 6px;
 	}
 
 	.footer__note {
-		margin-top: 12px;
-		font-family: var(--serif);
-		font-size: 22px;
-		font-style: italic;
-		color: rgba(247, 242, 233, 0.82);
+		max-width: 44ch;
+		margin-top: 32px;
+		font-size: 13px;
+		line-height: 1.8;
+		color: rgba(247, 242, 233, 0.58);
 	}
 
 	.footer__bottom {
@@ -106,6 +118,7 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: 16px;
+		margin-top: clamp(48px, 7vw, 90px);
 		padding-top: 22px;
 		border-top: 1px solid var(--line-light);
 		font-size: 7px;
@@ -113,6 +126,25 @@
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
 		color: rgba(247, 242, 233, 0.42);
+	}
+
+	.footer__envelope-btn {
+		appearance: none;
+		background: none;
+		border: 0;
+		color: rgba(247, 242, 233, 0.55);
+		font-family: inherit;
+		font-size: 8px;
+		font-weight: 650;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		cursor: pointer;
+		transition: color 0.25s var(--ease);
+		padding: 4px 8px;
+	}
+
+	.footer__envelope-btn:hover {
+		color: var(--paper);
 	}
 
 	.footer__bottom a {
