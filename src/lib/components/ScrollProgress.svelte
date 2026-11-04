@@ -4,102 +4,65 @@
 	let barEl = $state<HTMLElement | null>(null);
 
 	onMount(() => {
-		let currentProgress = 0;
-		let targetProgress = 0;
+		// Если браузер поддерживает нативные аппаратные CSS Scroll-Driven Animations (Chrome, Edge, Safari 18+),
+		// полоса прогресса анимируется на уровне GPU-композитора без участия JS — 120 FPS и нулевая задержка в обе стороны.
+		if (typeof CSS !== 'undefined' && CSS.supports && CSS.supports('animation-timeline', 'scroll()')) {
+			return;
+		}
+
+		// Fallback для более старых браузеров (Safari 16/17):
+		// Мгновенная синхронизация 1:1 без искусственных lerp-задержек, которые вызывали рассинхрон и лаги при обратном скролле.
 		let maxScroll = 1;
-		let rafId: number | null = null;
-		let lastTimestamp = 0;
+		let ticking = false;
 
 		function measure() {
 			const doc = document.documentElement;
 			maxScroll = Math.max(1, doc.scrollHeight - window.innerHeight);
 		}
 
-		function render(p: number) {
+		function update() {
 			if (!barEl) return;
+			const scrollY = Math.max(0, window.scrollY || window.pageYOffset || 0);
+			const p = Math.max(0, Math.min(1, scrollY / maxScroll));
 			barEl.style.transform = `scale3d(${p.toFixed(4)}, 1, 1)`;
+			ticking = false;
 		}
 
-		function tick(timestamp: number) {
-			if (!lastTimestamp) lastTimestamp = timestamp;
-			const dt = Math.min(48, Math.max(1, timestamp - lastTimestamp));
-			lastTimestamp = timestamp;
-
-			const diff = targetProgress - currentProgress;
-
-			if (Math.abs(diff) < 0.0003) {
-				currentProgress = targetProgress;
-				render(currentProgress);
-				rafId = null;
-				lastTimestamp = 0;
-				return;
-			}
-
-			// Адаптивное затухание (lambda = 24):
-			// Превращает дерганую полоску в плавный, «жидкий» индикатор без микрорывков
-			const factor = 1 - Math.exp((-24 * dt) / 1000);
-			currentProgress += diff * factor;
-
-			render(currentProgress);
-			rafId = requestAnimationFrame(tick);
-		}
-
-		function startGlide() {
-			if (rafId === null) {
-				lastTimestamp = performance.now();
-				rafId = requestAnimationFrame(tick);
+		function onScroll() {
+			if (!ticking) {
+				requestAnimationFrame(update);
+				ticking = true;
 			}
 		}
 
-		function updateTarget() {
-			const scrollY = window.scrollY || window.pageYOffset || 0;
-			targetProgress = Math.max(0, Math.min(1, scrollY / maxScroll));
-			startGlide();
+		function onResize() {
+			measure();
+			update();
 		}
 
 		measure();
-		const initialScrollY = window.scrollY || window.pageYOffset || 0;
-		targetProgress = Math.max(0, Math.min(1, initialScrollY / maxScroll));
-		currentProgress = targetProgress;
-		render(currentProgress);
+		update();
 
-		// Повторный замер после загрузки шрифтов и изображений
-		requestAnimationFrame(() => {
-			measure();
-			updateTarget();
-		});
-
-		const onScroll = () => {
-			updateTarget();
-		};
-
-		const onResize = () => {
-			measure();
-			updateTarget();
-		};
+		window.addEventListener('scroll', onScroll, { passive: true });
+		window.addEventListener('resize', onResize, { passive: true });
+		window.addEventListener('orientationchange', onResize, { passive: true });
+		window.addEventListener('load', onResize, { passive: true });
 
 		let ro: ResizeObserver | null = null;
 		if (typeof ResizeObserver !== 'undefined') {
 			ro = new ResizeObserver(() => {
 				measure();
-				updateTarget();
+				update();
 			});
 			ro.observe(document.documentElement);
 		}
 
-		window.addEventListener('scroll', onScroll, { passive: true });
-		window.addEventListener('resize', onResize, { passive: true });
-		window.addEventListener('orientationchange', onResize, { passive: true });
-
 		return () => {
-			if (rafId !== null) {
-				cancelAnimationFrame(rafId);
-				rafId = null;
-			}
 			ro?.disconnect();
 			window.removeEventListener('scroll', onScroll);
 			window.removeEventListener('resize', onResize);
 			window.removeEventListener('orientationchange', onResize);
+			window.removeEventListener('load', onResize);
 		};
 	});
 </script>
@@ -125,6 +88,22 @@
 		will-change: transform;
 		backface-visibility: hidden;
 		-webkit-backface-visibility: hidden;
+	}
+
+	@supports (animation-timeline: scroll()) {
+		.scroll-progress {
+			animation: scroll-progress-grow auto linear both;
+			animation-timeline: scroll();
+		}
+	}
+
+	@keyframes scroll-progress-grow {
+		from {
+			transform: scale3d(0, 1, 1);
+		}
+		to {
+			transform: scale3d(1, 1, 1);
+		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
