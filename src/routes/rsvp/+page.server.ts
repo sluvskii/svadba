@@ -1,11 +1,13 @@
 import { fail } from '@sveltejs/kit';
 import { listGuests, getGuestByToken, createGuest, saveRsvp, loadContentOverride } from '#lib/repo';
+import { parseDrinkOptions } from '#lib/rsvp-form';
 import { notifyTelegramRsvp } from '#lib/notify';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	const contentOverride = await loadContentOverride(event);
-	return { contentOverride };
+	const drinkOptions = parseDrinkOptions(contentOverride?.drinks);
+	return { contentOverride, drinkOptions };
 };
 
 /**
@@ -56,7 +58,6 @@ export const actions: Actions = {
 		const data = await event.request.formData();
 		const name = String(data.get('name') ?? '').trim().slice(0, 120);
 		const attendance = data.get('attendance');
-		const comment = String(data.get('comment') ?? '').trim().slice(0, 500);
 
 		if (!name) {
 			return fail(400, { missingName: true });
@@ -65,6 +66,21 @@ export const actions: Actions = {
 		if (attendance !== 'yes' && attendance !== 'no') {
 			return fail(400, { missingAttendance: true, name });
 		}
+
+		const override = await loadContentOverride(event);
+		const activeDrinks = parseDrinkOptions(override?.drinks);
+		const validDrinkIds = new Set(activeDrinks.map((d) => d.id));
+		const drinks = data
+			.getAll('drinks')
+			.map(String)
+			.filter((d) => validDrinkIds.has(d))
+			.slice(0, 20);
+
+		const plusOneName = String(data.get('plusOneName') ?? '').trim().slice(0, 120);
+		const childrenNames = String(data.get('children') ?? '').trim().slice(0, 300);
+		const foodNotes = String(data.get('food') ?? '').trim().slice(0, 300);
+		const songRequest = String(data.get('song') ?? '').trim().slice(0, 200);
+		const comment = String(data.get('comment') ?? '').trim().slice(0, 1000);
 
 		const normInput = normalize(name);
 		const inputWords = extractCoreWords(name);
@@ -108,26 +124,34 @@ export const actions: Actions = {
 				token = matchedGuest.token;
 				await saveRsvp(event, matchedGuest.id, {
 					attending: attendance,
-					comment: comment || undefined,
-					drinks: [],
-					transferNeeded: false
+					plusOneName: plusOneName || undefined,
+					childrenNames: childrenNames || undefined,
+					drinks,
+					foodNotes: foodNotes || undefined,
+					transferNeeded: false,
+					songRequest: songRequest || undefined,
+					comment: comment || undefined
 				});
 			} else {
 				// Если гостя нет в БД — сохраняем, чтобы ни один ответ не потерялся!
 				token = await createGuest(event, {
 					name,
 					side: 'both',
-					plusOneAllowed: false,
-					childrenAllowed: false,
+					plusOneAllowed: Boolean(plusOneName),
+					childrenAllowed: Boolean(childrenNames),
 					note: 'Быстрый ответ на сайте'
 				});
 				const created = await getGuestByToken(event, token);
 				if (created) {
 					await saveRsvp(event, created.id, {
 						attending: attendance,
-						comment: comment || undefined,
-						drinks: [],
-						transferNeeded: false
+						plusOneName: plusOneName || undefined,
+						childrenNames: childrenNames || undefined,
+						drinks,
+						foodNotes: foodNotes || undefined,
+						transferNeeded: false,
+						songRequest: songRequest || undefined,
+						comment: comment || undefined
 					});
 				}
 			}
@@ -136,9 +160,13 @@ export const actions: Actions = {
 			await notifyTelegramRsvp(event, {
 				guestName: finalGuestName,
 				attending: attendance,
-				drinks: [],
+				plusOneName: plusOneName || null,
+				childrenNames: childrenNames || null,
+				drinks,
+				foodNotes: foodNotes || null,
 				transferNeeded: false,
-				comment: comment || (matchedGuest ? '' : 'Записан через быструю форму')
+				songRequest: songRequest || null,
+				comment: comment || (matchedGuest ? '' : 'Записан через общую форму')
 			});
 		} catch (e) {
 			console.error('Error saving fast RSVP:', e);

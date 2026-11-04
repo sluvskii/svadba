@@ -1,41 +1,54 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { slide } from 'svelte/transition';
-	import { defaultDrinkOptions, rsvpForm, type DrinkOption } from '#lib/rsvp-form.js';
+	import { defaultDrinkOptions, rsvpForm, type DrinkOption, type Guest } from '#lib/rsvp-form.js';
 	import { i18n, pick } from '#lib/i18n.svelte.js';
-	import type { Guest } from '#lib/rsvp-form.js';
 	import Ornament from './Ornament.svelte';
 
 	type Props = {
-		guest: Guest;
+		guest?: Guest;
+		isOpen?: boolean;
 		initiallySubmitted?: boolean;
 		drinkOptions?: DrinkOption[];
+		token?: string | null;
 	};
 
-	let { guest, initiallySubmitted = false, drinkOptions = defaultDrinkOptions }: Props = $props();
+	let {
+		guest,
+		isOpen = false,
+		initiallySubmitted = false,
+		drinkOptions = defaultDrinkOptions,
+		token = null
+	}: Props = $props();
 
-	// Initial field values are intentionally captured once from the guest.
 	/* svelte-ignore state_referenced_locally */
-	let attendance = $state<'yes' | 'no' | null>(guest.response?.attendance ?? null);
+	let name = $state('');
 	/* svelte-ignore state_referenced_locally */
-	let plusOneName = $state(guest.response?.plusOneName ?? guest.plusOneName ?? '');
+	let attendance = $state<'yes' | 'no' | null>(guest?.response?.attendance ?? null);
 	/* svelte-ignore state_referenced_locally */
-	let children = $state(guest.response?.children ?? '');
+	let plusOneName = $state(guest?.response?.plusOneName ?? guest?.plusOneName ?? '');
 	/* svelte-ignore state_referenced_locally */
-	let drinks = $state<string[]>(guest.response?.drinks ?? []);
+	let children = $state(guest?.response?.children ?? '');
 	/* svelte-ignore state_referenced_locally */
-	let food = $state(guest.response?.food ?? '');
+	let drinks = $state<string[]>(guest?.response?.drinks ?? []);
 	/* svelte-ignore state_referenced_locally */
-	let song = $state(guest.response?.song ?? '');
+	let food = $state(guest?.response?.food ?? '');
 	/* svelte-ignore state_referenced_locally */
-	let comment = $state(guest.response?.comment ?? '');
+	let song = $state(guest?.response?.song ?? '');
+	/* svelte-ignore state_referenced_locally */
+	let comment = $state(guest?.response?.comment ?? '');
 
 	let submitting = $state(false);
 	/* svelte-ignore state_referenced_locally */
-	let submitted = $state(initiallySubmitted || guest.response !== null);
+	let submitted = $state(initiallySubmitted || (guest ? guest.response !== null : false));
+	let serverToken = $state<string | null>(null);
 	let showAttendanceError = $state(false);
+	let showNameError = $state(false);
 
 	const isYes = $derived(attendance === 'yes');
+	const allowsPlusOne = $derived(isOpen || Boolean(guest?.plusOneAllowed));
+	const allowsChildren = $derived(isOpen || Boolean(guest?.childrenAllowed));
+	const resolvedToken = $derived(guest?.token ?? token ?? serverToken);
 
 	function isNoneOption(optId: string): boolean {
 		if (optId === 'none') return true;
@@ -64,12 +77,22 @@
 	}
 
 	function submit() {
+		let valid = true;
+		if (isOpen && !name.trim()) {
+			showNameError = true;
+			valid = false;
+		} else {
+			showNameError = false;
+		}
+
 		if (!attendance) {
 			showAttendanceError = true;
-			return false;
+			valid = false;
+		} else {
+			showAttendanceError = false;
 		}
-		showAttendanceError = false;
-		return true;
+
+		return valid;
 	}
 </script>
 
@@ -80,9 +103,25 @@
 		<p class="rsvp-form__success-text">
 			{attendance === 'no' ? pick(rsvpForm.successNo) : pick(rsvpForm.successText)}
 		</p>
-		<button class="link-line rsvp-form__edit" type="button" onclick={() => (submitted = false)}>
-			<span>{pick(rsvpForm.edit)}</span>
-		</button>
+		{#if resolvedToken && attendance === 'yes'}
+			<div class="rsvp-form__extra-box">
+				<p class="tiny muted">{pick(rsvpForm.detailsKicker)}</p>
+				<p class="rsvp-form__extra-desc">{pick(rsvpForm.detailsDesc)}</p>
+				<a class="btn btn--outline rsvp-form__extra-link" href="/invite/{resolvedToken}">
+					{pick(rsvpForm.detailsLink)}
+				</a>
+			</div>
+		{/if}
+		<div class="rsvp-form__success-actions">
+			<button class="link-line rsvp-form__edit" type="button" onclick={() => (submitted = false)}>
+				<span>{pick(rsvpForm.edit)}</span>
+			</button>
+			{#if isOpen}
+				<a class="btn btn--outline rsvp-form__home-btn" href="/">
+					{pick(rsvpForm.homeBtn)}
+				</a>
+			{/if}
+		</div>
 	</div>
 {:else}
 	<form
@@ -95,13 +134,38 @@
 				};
 			}
 			submitting = true;
-			return async ({ update }) => {
+			return async ({ result, update }) => {
 				await update({ reset: false });
 				submitting = false;
+				if (result.type === 'success' && (result.data as any)?.token) {
+					serverToken = (result.data as any).token;
+				}
 				submitted = true;
 			};
 		}}
 	>
+		{#if isOpen}
+			<!-- name -->
+			<div class="field">
+				<label class="field-label" for="guestName">
+					{pick(rsvpForm.name)} <span class="field-req">*</span>
+				</label>
+				<input
+					class="input"
+					id="guestName"
+					name="name"
+					bind:value={name}
+					placeholder={pick(rsvpForm.namePlaceholder)}
+					autocomplete="name"
+					required
+				/>
+				<p class="form-hint">{pick(rsvpForm.nameHint)}</p>
+				{#if showNameError}
+					<p class="form-error">{pick(rsvpForm.nameRequired)}</p>
+				{/if}
+			</div>
+		{/if}
+
 		<!-- attendance -->
 		<fieldset class="rsvp-form__group">
 			<legend class="field-label rsvp-form__legend rsvp-form__legend--attendance">{pick(rsvpForm.attendance)}</legend>
@@ -148,7 +212,7 @@
 
 					<div class="field-grid">
 						<!-- plus one -->
-						{#if guest.plusOneAllowed}
+						{#if allowsPlusOne}
 							<div class="field">
 								<label class="field-label" for="plusOneName">{pick(rsvpForm.plusOneName)}</label>
 								<input
@@ -162,7 +226,7 @@
 						{/if}
 
 						<!-- children -->
-						{#if guest.childrenAllowed}
+						{#if allowsChildren}
 							<div class="field">
 								<label class="field-label" for="children">{pick(rsvpForm.children)}</label>
 								<input
@@ -229,6 +293,11 @@
 		display: flex;
 		flex-direction: column;
 		gap: 30px;
+	}
+
+	.field-req {
+		color: var(--rose-deep, #9c4b4b);
+		font-weight: 700;
 	}
 
 	.rsvp-form__group {
@@ -307,7 +376,51 @@
 		color: var(--ink-soft);
 	}
 
+	.rsvp-form__extra-box {
+		margin-top: 10px;
+		padding: 18px 20px;
+		background: var(--paper-2);
+		border: 1px dashed var(--border-soft);
+		border-radius: var(--radius-md);
+		text-align: center;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 8px;
+		max-width: 440px;
+		width: 100%;
+	}
+
+	.rsvp-form__extra-desc {
+		font-size: 13px;
+		line-height: 1.55;
+		color: var(--ink-soft);
+		margin: 0;
+	}
+
+	.rsvp-form__extra-link {
+		margin-top: 6px;
+		font-size: 13px;
+		padding: 10px 22px;
+	}
+
+	.rsvp-form__success-actions {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 14px;
+		margin-top: 14px;
+		width: 100%;
+	}
+
 	.rsvp-form__edit {
 		color: var(--ink-soft);
+	}
+
+	.rsvp-form__home-btn {
+		width: 100%;
+		max-width: 240px;
+		font-size: 13px;
+		padding: 10px 20px;
 	}
 </style>

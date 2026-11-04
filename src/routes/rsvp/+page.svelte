@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import { content, applyContentOverride } from '#lib/content.js';
 	import { i18n, pick, setLang } from '#lib/i18n.svelte.js';
 	import Monogram from '#lib/components/Monogram.svelte';
 	import Ornament from '#lib/components/Ornament.svelte';
+	import RsvpForm from '#lib/components/RsvpForm.svelte';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
@@ -11,25 +11,6 @@
 	/* svelte-ignore state_referenced_locally */
 	if (data.contentOverride) {
 		applyContentOverride(data.contentOverride);
-	}
-
-	let name = $state('');
-	let attendance = $state<'yes' | 'no' | ''>('');
-	let comment = $state('');
-	let submitting = $state(false);
-	let clientError = $state('');
-
-	function validate() {
-		if (!name.trim()) {
-			clientError = pick(content.rsvp.openForm.errorName);
-			return false;
-		}
-		if (!attendance) {
-			clientError = pick(content.rsvp.openForm.errorAttendance);
-			return false;
-		}
-		clientError = '';
-		return true;
 	}
 </script>
 
@@ -39,11 +20,11 @@
 	<meta property="og:description" content={pick(content.rsvp.openForm.intro)} />
 </svelte:head>
 
-<div class="rsvp-page">
-	<header class="rsvp-page__header">
-		<a class="rsvp-page__brand" href="/">
-			<Monogram size={32} />
-			<span class="rsvp-page__brand-names">{pick(content.footer.names)}</span>
+<div class="invite">
+	<header class="invite__header">
+		<a class="invite__brand" href="/">
+			<Monogram size={30} />
+			<span class="invite__brand-names">{pick(content.footer.names)}</span>
 		</a>
 		<div class="lang" aria-label="Язык сайта / Тел теле">
 			<button
@@ -64,204 +45,70 @@
 		</div>
 	</header>
 
-	<main class="rsvp-page__main">
-		{#if form?.success}
-			<section class="rsvp-card rsvp-card--success" role="status">
-				<Ornament variant="flower" class="rsvp-card__flower" />
-				<p class="tiny muted rsvp-card__kicker">{pick(content.rsvp.openForm.successKicker)}</p>
-				<h1 class="display rsvp-card__title">
-					{pick(content.rsvp.openForm.successTitle)}, {form.guestName}!
-				</h1>
-				<Ornament variant="divider" class="rsvp-card__divider" />
-				<p class="lead rsvp-card__text">
-					{#if form.attending === 'yes'}
-						{pick(content.rsvp.openForm.successYes)}
-					{:else}
-						{pick(content.rsvp.openForm.successNo)}
-					{/if}
-				</p>
+	<main class="invite__main shell shell--narrow" id="main">
+		<section class="invite__hero">
+			<p class="eyebrow eyebrow--plain">{pick(content.rsvp.openForm.kicker)}</p>
+			<h1 class="display invite__name">
+				{pick(content.rsvp.openForm.title)}
+			</h1>
+			<Ornament variant="divider" class="invite__divider" />
+			<p class="lead invite__note">{pick(content.rsvp.openForm.intro)}</p>
+			<p class="invite__meta">
+				<span>{pick(content.wedding.dateLong)}</span>
+				<span class="invite__meta-dot" aria-hidden="true"></span>
+				<span>{pick(content.wedding.city)}</span>
+			</p>
+		</section>
 
-				{#if form.token && form.attending === 'yes'}
-					<div class="rsvp-card__extra-box">
-						<p class="tiny muted">{pick(content.rsvp.openForm.detailsKicker)}</p>
-						<p class="rsvp-card__extra-desc">
-							{pick(content.rsvp.openForm.detailsDesc)}
-						</p>
-						<a class="btn btn--outline rsvp-card__extra-link" href="/invite/{form.token}">
-							{pick(content.rsvp.openForm.detailsLink)}
-						</a>
-					</div>
-				{/if}
-
-				<div class="rsvp-card__actions">
-					<a class="btn rsvp-card__action-btn" href="/">
-						{pick(content.rsvp.openForm.homeBtn)}
-					</a>
-					<a class="link-line rsvp-card__reset" href="/rsvp">
-						<span>{pick(content.rsvp.openForm.resetBtn)}</span>
-					</a>
-				</div>
-			</section>
-		{:else}
-			<section class="rsvp-card">
-				<p class="tiny muted rsvp-card__kicker">{pick(content.rsvp.openForm.kicker)}</p>
-				<h1 class="display rsvp-card__title">{pick(content.rsvp.openForm.title)}</h1>
-				<Ornament variant="divider" class="rsvp-card__divider" />
-				<p class="rsvp-card__intro">
-					{pick(content.rsvp.openForm.intro)}
-				</p>
-
-				<form
-					class="rsvp-form"
-					method="POST"
-					use:enhance={() => {
-						if (!validate()) {
-							return async ({ update }) => {
-								await update({ reset: false });
-							};
-						}
-						submitting = true;
-						return async ({ update }) => {
-							await update({ reset: false });
-							submitting = false;
-						};
-					}}
-				>
-					<!-- Поле ввода имени -->
-					<div class="rsvp-field">
-						<label class="rsvp-field__label" for="guest-name">
-							{pick(content.rsvp.openForm.nameLabel)} <span class="rsvp-field__req">*</span>
-						</label>
-						<input
-							class="input rsvp-field__input"
-							id="guest-name"
-							type="text"
-							name="name"
-							bind:value={name}
-							placeholder={pick(content.rsvp.openForm.namePlaceholder)}
-							autocomplete="name"
-							required
-						/>
-						<span class="rsvp-field__hint">
-							{pick(content.rsvp.openForm.nameHint)}
-						</span>
-					</div>
-
-					<!-- Выбор: Приду / Не смогу -->
-					<div class="rsvp-field">
-						<span class="rsvp-field__label">
-							{pick(content.rsvp.openForm.attendanceLabel)} <span class="rsvp-field__req">*</span>
-						</span>
-						<div class="rsvp-choice-grid">
-							<label class="choice-card" class:is-selected={attendance === 'yes'}>
-								<input
-									class="sr-only"
-									type="radio"
-									name="attendance"
-									value="yes"
-									bind:group={attendance}
-								/>
-								<span class="choice-card__icon choice-card__icon--yes" aria-hidden="true">
-									<svg viewBox="0 0 20 20" width="16" height="16" fill="none" aria-hidden="true">
-										<path d="M4 10.5L8 14.5L16 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
-									</svg>
-								</span>
-								<span class="choice-card__title">{pick(content.rsvp.openForm.yesTitle)}</span>
-								<span class="choice-card__desc">{pick(content.rsvp.openForm.yesDesc)}</span>
-							</label>
-
-							<label class="choice-card" class:is-selected={attendance === 'no'}>
-								<input
-									class="sr-only"
-									type="radio"
-									name="attendance"
-									value="no"
-									bind:group={attendance}
-								/>
-								<span class="choice-card__icon choice-card__icon--no" aria-hidden="true">
-									<svg viewBox="0 0 20 20" width="16" height="16" fill="none" aria-hidden="true">
-										<path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
-									</svg>
-								</span>
-								<span class="choice-card__title">{pick(content.rsvp.openForm.noTitle)}</span>
-								<span class="choice-card__desc">{pick(content.rsvp.openForm.noDesc)}</span>
-							</label>
-						</div>
-					</div>
-
-					<!-- Поле пожелания (необязательно) -->
-					<div class="rsvp-field">
-						<label class="rsvp-field__label" for="guest-comment">
-							{pick(content.rsvp.openForm.commentLabel)} <span class="rsvp-field__opt">{pick(content.rsvp.openForm.commentOpt)}</span>
-						</label>
-						<textarea
-							class="input rsvp-field__textarea"
-							id="guest-comment"
-							name="comment"
-							bind:value={comment}
-							rows="3"
-							placeholder={pick(content.rsvp.openForm.commentPlaceholder)}
-						></textarea>
-					</div>
-
-					{#if clientError}
-						<p class="rsvp-alert" role="alert">{clientError}</p>
-					{:else if form?.missingName}
-						<p class="rsvp-alert" role="alert">{pick(content.rsvp.openForm.errorName)}</p>
-					{:else if form?.missingAttendance}
-						<p class="rsvp-alert" role="alert">{pick(content.rsvp.openForm.errorAttendance)}</p>
-					{/if}
-
-					<button class="btn rsvp-submit" type="submit" disabled={submitting}>
-						{submitting ? pick(content.rsvp.openForm.submitting) : pick(content.rsvp.openForm.submit)}
-					</button>
-				</form>
-
-				<footer class="rsvp-card__foot">
-					<p class="tiny muted">
-						{pick(content.rsvp.openForm.questionsFoot)}
-					</p>
-				</footer>
-			</section>
-		{/if}
+		<section class="invite__form-card">
+			<h2 class="display invite__form-title">{pick(content.rsvp.title)}</h2>
+			<RsvpForm
+				isOpen={true}
+				drinkOptions={data.drinkOptions}
+				token={form?.token ?? null}
+				initiallySubmitted={form?.success === true}
+			/>
+		</section>
 	</main>
+
+	<footer class="invite__footer">
+		<Ornament variant="divider" class="invite__footer-ornament" />
+		<p class="tiny muted">{pick(content.footer.names)} · {pick(content.footer.place)}</p>
+	</footer>
 </div>
 
 <style>
-	.rsvp-page {
+	.invite {
+		position: relative;
 		min-height: 100svh;
-		display: flex;
-		flex-direction: column;
 		background:
 			radial-gradient(120% 55% at 50% 0%, rgba(158, 174, 151, 0.16), transparent 62%),
 			var(--paper);
 		color: var(--ink);
+		overflow-x: clip;
 	}
 
-	.rsvp-page__header {
+	.invite__header {
+		position: relative;
+		z-index: 3;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		gap: 16px;
-		padding: 24px clamp(20px, 4vw, 48px) 0;
+		padding: 30px 42px 0;
 	}
 
-	.rsvp-page__brand {
+	.invite__brand {
 		display: inline-flex;
 		align-items: center;
 		gap: 12px;
 		text-decoration: none;
 		color: var(--pine-deep);
-		transition: opacity 0.2s var(--ease);
 	}
 
-	.rsvp-page__brand:hover {
-		opacity: 0.8;
-	}
-
-	.rsvp-page__brand-names {
+	.invite__brand-names {
 		font-family: var(--serif);
-		font-size: 1.1rem;
+		font-size: 1.05rem;
 		letter-spacing: 0.04em;
 	}
 
@@ -300,308 +147,90 @@
 		font-size: 11px;
 	}
 
-	.rsvp-page__main {
-		flex: 1;
-		display: grid;
-		place-items: center;
-		padding: clamp(24px, 4vw, 56px) 20px clamp(40px, 6vw, 80px);
+	.invite__main {
+		position: relative;
+		z-index: 1;
 	}
 
-	.rsvp-card {
-		width: min(100%, 640px);
-		padding: clamp(32px, 5.5vw, 56px) clamp(24px, 5vw, 48px);
-		background: rgba(255, 253, 248, 0.96);
-		border: 1px solid var(--line);
-		border-radius: 0;
-		box-shadow: 0 16px 40px -10px rgba(25, 30, 27, 0.05);
-		text-align: left;
-	}
-
-	.rsvp-card--success {
+	.invite__hero {
 		text-align: center;
+		padding: clamp(40px, 7vh, 80px) 0 clamp(24px, 4vh, 44px);
 	}
 
-	.rsvp-card__kicker {
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
-		text-align: center;
+	.invite__name {
+		font-size: clamp(42px, 7.5vw, 76px);
+		line-height: 1.08;
+		font-weight: 500;
+		color: var(--pine-deep);
+		margin: 16px 0 6px;
 	}
 
-	.rsvp-card__title {
-		font-size: clamp(32px, 4.4vw, 48px);
-		line-height: 1.05;
-		margin: 12px 0 0;
-		text-align: center;
-	}
-
-	:global(.rsvp-card__divider) {
-		width: 150px;
+	:global(.invite__divider) {
+		width: 170px;
 		color: var(--brass);
-		margin: 14px auto 20px;
+		margin: 6px auto 22px;
 	}
 
-	:global(.rsvp-card__flower) {
-		width: 44px;
-		height: 62px;
-		color: var(--pine);
-		margin: 0 auto 16px;
-	}
-
-	.rsvp-card__intro {
-		max-width: 46ch;
-		margin: 0 auto 28px;
-		text-align: center;
-		font-size: 15px;
-		line-height: 1.6;
-		color: var(--ink-soft);
-	}
-
-	.rsvp-card__text {
+	.invite__note {
 		max-width: 46ch;
 		margin: 0 auto;
-		color: var(--ink-soft);
-		font-size: 17px;
 	}
 
-	.rsvp-card__extra-box {
-		margin: 28px auto 0;
-		padding: 24px 20px;
-		border: 1px dashed var(--line-strong);
-		background: rgba(245, 243, 237, 0.6);
-		max-width: 440px;
-		text-align: center;
-	}
-
-	.rsvp-card__extra-desc {
-		font-size: 14px;
-		color: var(--ink-soft);
-		margin: 6px 0 16px;
-	}
-
-	.rsvp-card__extra-link {
-		width: 100%;
-		font-size: 13px;
-		letter-spacing: 0.08em;
-	}
-
-	.rsvp-card__actions {
+	.invite__meta {
 		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 16px;
-		margin-top: 32px;
-	}
-
-	.rsvp-card__action-btn {
-		width: min(100%, 320px);
-	}
-
-	.rsvp-card__reset {
-		font-size: 13px;
-		color: var(--ink-faint);
-	}
-
-	.rsvp-form {
-		display: flex;
-		flex-direction: column;
-		gap: 26px;
-	}
-
-	.rsvp-field {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-	}
-
-	.rsvp-field__label {
-		font-family: var(--sans);
-		font-size: 13px;
-		font-weight: 600;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
-		color: var(--pine-deep);
-	}
-
-	.rsvp-field__req {
-		color: #b91c1c;
-	}
-
-	.rsvp-field__opt {
-		font-size: 12px;
-		font-weight: 400;
-		color: var(--ink-faint);
-		text-transform: none;
-		letter-spacing: normal;
-	}
-
-	.rsvp-field__input {
-		width: 100%;
-		font-size: 16px;
-		padding: 14px 16px;
-		border: 1px solid var(--line-strong);
-		border-radius: 0;
-		background: #ffffff;
-		transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
-	}
-
-	.rsvp-field__input:focus {
-		outline: none;
-		border-color: var(--pine);
-		box-shadow: 0 0 0 2px rgba(45, 71, 57, 0.15);
-	}
-
-	.rsvp-field__hint {
-		font-size: 12px;
-		color: var(--ink-faint);
-		line-height: 1.4;
-	}
-
-	.rsvp-choice-grid {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 14px;
-	}
-
-	.choice-card {
-		display: flex;
-		flex-direction: column;
-		padding: 18px 16px;
-		border: 1px solid var(--line-strong);
-		border-radius: 0;
-		background: #ffffff;
-		cursor: pointer;
-		position: relative;
-		transition: all 0.2s var(--ease);
-		user-select: none;
-	}
-
-	.choice-card:hover {
-		border-color: var(--pine);
-		background: rgba(245, 247, 244, 0.8);
-	}
-
-	.choice-card.is-selected {
-		border-color: var(--pine-deep);
-		background: var(--pine-deep);
-		color: #ffffff;
-		box-shadow: 0 4px 16px -2px rgba(35, 58, 46, 0.2);
-	}
-
-	.choice-card__icon {
-		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		width: 36px;
-		height: 36px;
-		margin-bottom: 12px;
-		border-radius: 50%;
-		border: 1px solid var(--line-strong);
-		background: var(--paper-2);
-		color: var(--ink);
-		transition: all 0.2s var(--ease);
-		flex-shrink: 0;
-	}
-
-	.choice-card__icon svg {
-		display: block;
-		width: 16px;
-		height: 16px;
-	}
-
-	.choice-card.is-selected .choice-card__icon {
-		background: #ffffff;
-		border-color: #ffffff;
-	}
-
-	.choice-card.is-selected .choice-card__icon--yes {
-		color: #1e5e3a;
-	}
-
-	.choice-card.is-selected .choice-card__icon--no {
-		color: #b91c1c;
-	}
-
-	.choice-card__title {
-		font-family: var(--serif);
-		font-size: 18px;
-		font-weight: 500;
-		line-height: 1.2;
-		margin-bottom: 4px;
-	}
-
-	.choice-card__desc {
+		gap: 14px;
+		margin-top: 24px;
 		font-size: 12px;
-		line-height: 1.4;
-		color: var(--ink-faint);
-		transition: color 0.2s var(--ease);
+		font-weight: 600;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--ink-soft);
 	}
 
-	.choice-card.is-selected .choice-card__desc {
-		color: rgba(255, 255, 255, 0.8);
+	.invite__meta-dot {
+		width: 4px;
+		height: 4px;
+		border-radius: 50%;
+		background: var(--brass);
 	}
 
-	.rsvp-field__textarea {
-		width: 100%;
-		font-size: 15px;
-		line-height: 1.5;
-		padding: 12px 16px;
-		border: 1px solid var(--line-strong);
-		border-radius: 0;
+	.invite__form-card {
+		max-width: 640px;
+		margin: clamp(24px, 4vh, 42px) auto 0;
+		padding: clamp(26px, 4.5vw, 48px);
 		background: #ffffff;
-		resize: vertical;
-		min-height: 78px;
+		border: 1px solid var(--line);
+		border-radius: 0;
 	}
 
-	.rsvp-field__textarea:focus {
-		outline: none;
-		border-color: var(--pine);
-		box-shadow: 0 0 0 2px rgba(45, 71, 57, 0.15);
-	}
-
-	.rsvp-alert {
-		margin: 4px 0 0;
-		padding: 12px 16px;
-		border: 1px solid #f8b4b4;
-		background: #fff5f5;
-		color: #9b1c1c;
-		font-size: 13px;
-		line-height: 1.5;
-	}
-
-	.rsvp-submit {
-		width: 100%;
-		margin-top: 8px;
-		padding: 16px;
-		font-size: 14px;
-		letter-spacing: 0.12em;
-	}
-
-	.rsvp-card__foot {
-		margin-top: 26px;
-		padding-top: 18px;
-		border-top: 1px solid var(--line);
+	.invite__form-title {
 		text-align: center;
+		font-size: clamp(30px, 4.4vw, 44px);
+		margin: 0 0 clamp(24px, 4vw, 36px);
 	}
 
-	.sr-only {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		padding: 0;
-		margin: -1px;
-		overflow: hidden;
-		clip: rect(0, 0, 0, 0);
-		white-space: nowrap;
-		border: 0;
+	.invite__footer {
+		position: relative;
+		z-index: 1;
+		text-align: center;
+		padding: clamp(50px, 8vh, 80px) 24px 40px;
 	}
 
-	@media (max-width: 600px) {
-		.rsvp-choice-grid {
-			grid-template-columns: 1fr;
+	:global(.invite__footer-ornament) {
+		width: 150px;
+		color: var(--brass);
+		margin: 0 auto 14px;
+	}
+
+	@media (max-width: 640px) {
+		.invite__header {
+			padding: 22px 24px 0;
 		}
 
-		.rsvp-card {
-			padding: 28px 18px;
+		.invite__form-card {
+			border-radius: 0;
 		}
 	}
 </style>
