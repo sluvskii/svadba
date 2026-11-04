@@ -343,4 +343,40 @@
 		border-radius: 8px;
 		font-size: 0.9rem;
 	}
+
+	@media (max-width: 640px) {
+		.settings-page {
+			gap: 16px;
+		}
+
+		.page-title {
+			font-size: 1.5rem;
+		}
+
+		.page-subtitle {
+			font-size: 0.82rem;
+		}
+
+		.card {
+			padding: 14px 12px;
+			border-radius: 8px;
+		}
+
+		.card__title {
+			font-size: 1.15rem;
+		}
+
+		.btn-row {
+			flex-direction: column;
+			align-items: stretch;
+			gap: 8px;
+		}
+
+		.btn-row .btn,
+		.btn-row form,
+		.btn-row form .btn {
+			width: 100%;
+			justify-content: center;
+		}
+	}
 </style>

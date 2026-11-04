@@ -156,4 +156,23 @@
 		margin-top: 28px;
 		text-align: center;
 	}
+
+	@media (max-width: 480px) {
+		.login-page {
+			padding: 16px 12px;
+		}
+
+		.login-card {
+			padding: 28px 18px;
+			border-radius: 10px;
+		}
+
+		.login-title {
+			font-size: 1.55rem;
+		}
+
+		.login-sub {
+			font-size: 0.85rem;
+		}
+	}
 </style>

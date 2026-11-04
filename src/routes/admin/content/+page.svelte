@@ -732,4 +732,78 @@
 		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 		z-index: 40;
 	}
+
+	@media (max-width: 680px) {
+		.content-admin {
+			gap: 16px;
+		}
+
+		.page-title {
+			font-size: 1.5rem;
+		}
+
+		.page-subtitle {
+			font-size: 0.82rem;
+		}
+
+		.card {
+			padding: 14px 12px;
+			border-radius: 8px;
+		}
+
+		.card__title {
+			font-size: 1.15rem;
+			margin-bottom: 12px;
+		}
+
+		.card__hint {
+			font-size: 0.8rem;
+			margin-bottom: 12px;
+		}
+
+		.list-row {
+			padding: 12px 10px;
+			margin-bottom: 10px;
+		}
+
+		.list-row__head {
+			flex-wrap: wrap;
+			gap: 8px;
+		}
+
+		.list-row__num {
+			font-size: 0.74rem;
+		}
+
+		.photo-block {
+			gap: 14px;
+		}
+
+		.photo-preview,
+		.photo-empty {
+			width: 100%;
+		}
+
+		.photo-actions form {
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		.photo-input {
+			max-width: 100%;
+		}
+
+		.save-bar {
+			bottom: 10px;
+			padding: 10px 14px;
+			border-radius: 10px;
+		}
+
+		.save-bar .btn {
+			width: 100%;
+			min-height: 44px;
+			font-size: 0.95rem;
+			justify-content: center;
+		}
+	}
 </style>

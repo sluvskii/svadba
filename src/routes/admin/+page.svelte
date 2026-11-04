@@ -494,4 +494,86 @@
 		background: #e1effe;
 		color: #1e429f;
 	}
+
+	@media (max-width: 640px) {
+		.dash {
+			gap: 18px;
+		}
+
+		.dash__header {
+			flex-direction: column;
+			align-items: stretch;
+			gap: 12px;
+		}
+
+		.dash__title {
+			font-size: 1.5rem;
+		}
+
+		.dash__subtitle {
+			font-size: 0.82rem;
+		}
+
+		.dash__actions {
+			width: 100%;
+		}
+
+		.dash__actions .btn {
+			width: 100%;
+			justify-content: center;
+		}
+
+		.kpi-grid {
+			grid-template-columns: repeat(2, 1fr);
+			gap: 8px;
+		}
+
+		.kpi-card {
+			padding: 12px 10px;
+		}
+
+		.kpi-card__label {
+			font-size: 0.7rem;
+		}
+
+		.kpi-card__value {
+			font-size: 1.55rem;
+			margin-bottom: 2px;
+		}
+
+		.kpi-card__hint {
+			font-size: 0.72rem;
+		}
+
+		.card {
+			padding: 14px 12px;
+			border-radius: 8px;
+		}
+
+		.card__head {
+			margin-bottom: 12px;
+		}
+
+		.card__title {
+			font-size: 1.15rem;
+		}
+
+		.drinks-grid {
+			grid-template-columns: 1fr;
+			gap: 8px;
+		}
+
+		.drink-item {
+			padding: 8px 12px;
+		}
+
+		.table-wrap {
+			-webkit-overflow-scrolling: touch;
+		}
+
+		.table th, .table td {
+			padding: 8px 10px;
+			font-size: 0.82rem;
+		}
+	}
 </style>
