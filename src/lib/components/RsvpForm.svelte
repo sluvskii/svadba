@@ -46,8 +46,8 @@
 	let showNameError = $state(false);
 
 	const isYes = $derived(attendance === 'yes');
-	const allowsPlusOne = $derived(isOpen || Boolean(guest?.plusOneAllowed));
-	const allowsChildren = $derived(isOpen || Boolean(guest?.childrenAllowed));
+	const allowsPlusOne = $derived(Boolean(guest?.plusOneAllowed));
+	const allowsChildren = $derived(Boolean(guest?.childrenAllowed));
 	const resolvedToken = $derived(guest?.token ?? token ?? serverToken);
 
 	function isNoneOption(optId: string): boolean {

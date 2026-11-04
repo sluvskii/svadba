@@ -15,8 +15,8 @@
 </script>
 
 <svelte:head>
-	<title>{pick(content.rsvp.openForm.title)} — {pick(content.footer.names)}</title>
-	<meta property="og:title" content="{pick(content.rsvp.openForm.title)} — {pick(content.footer.names)}" />
+	<title>{pick({ ru: 'Приглашение на свадьбу', tt: 'Туйга чакыру' })} — {pick(content.footer.names)}</title>
+	<meta property="og:title" content="{pick({ ru: 'Приглашение на свадьбу', tt: 'Туйга чакыру' })} — {pick(content.footer.names)}" />
 	<meta property="og:description" content={pick(content.rsvp.openForm.intro)} />
 </svelte:head>
 
@@ -49,7 +49,7 @@
 		<section class="invite__hero">
 			<p class="eyebrow eyebrow--plain">{pick(content.rsvp.openForm.kicker)}</p>
 			<h1 class="display invite__name">
-				{pick(content.rsvp.openForm.title)}
+				{pick({ ru: 'Приглашение на свадьбу', tt: 'Туйга чакыру' })}
 			</h1>
 			<Ornament variant="divider" class="invite__divider" />
 			<p class="lead invite__note">{pick(content.rsvp.openForm.intro)}</p>
