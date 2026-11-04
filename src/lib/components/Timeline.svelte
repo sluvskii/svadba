@@ -18,18 +18,25 @@
 	let cachedPoints: CachePoint[] = [];
 	let trackWidth = 0;
 	let trackHeight = 0;
-	let lastProgress = -1;
+
+	// Сглаженное кинематографичное перемещение сердечка (Smooth Glide / Inertial Lerp)
+	// Исключает телепортацию при быстром скролле или резких свайпах: сердечко непрерывно
+	// пролетает по изгибам кривой на высокой скорости, сохраняя физику скольжения.
+	let currentProgress = 0;
+	let targetProgress = 0;
+	let isInitialized = false;
+	let rafId: number | null = null;
+	let lastTimestamp = 0;
 
 	// Предварительный расчет ключевых точек траектории (Lookup Table).
 	// Выполняется строго 1 раз при монтировании или смене пунктов расписания.
-	// Никаких тяжелых вызовов getPointAtLength() во время скролла или ResizeObserver!
 	function buildPathCache() {
 		if (!pathEl) return;
 
 		try {
 			const pathLen = pathEl.getTotalLength();
 			if (pathLen > 0) {
-				const samples = 120;
+				const samples = 150;
 				const points: CachePoint[] = [];
 				for (let i = 0; i <= samples; i++) {
 					const dist = (i / samples) * pathLen;
@@ -60,34 +67,12 @@
 		trackHeight = trackEl.clientHeight;
 	}
 
-	// Ультрабыстрое обновление положения (занимает <0.02ms):
-	// 1. Динамический замер sectionEl.getBoundingClientRect() исключает рассинхронизацию при догрузке картинок/шрифтов
-	// 2. Ранний выход (early return), когда секция вне зоны видимости
-	// 3. O(1) чтение из кэша с линейной интерполяцией
-	// 4. Чистый аппаратный GPU translate3d без перерисовки слоев
-	function updateHeart(force = false) {
-		if (!heartBadgeEl || !sectionEl || cachedPoints.length === 0 || trackWidth === 0 || trackHeight === 0) return;
-
-		const rect = sectionEl.getBoundingClientRect();
-		const vh = window.innerHeight;
-
-		// Сердечко начинает движение, когда верх секции входит в нижнюю четверть экрана
-		const start = vh * 0.75;
-		// Завершает путь, когда нижняя часть секции приближается к центру экрана
-		const end = -(rect.height - vh * 0.5);
-		const travel = start - end;
-		const current = start - rect.top;
-
-		const progress = Math.max(0, Math.min(1, current / Math.max(1, travel)));
-
-		// Если значение уперлось в 0 или 1 и не изменилось — не нагружаем CPU и GPU
-		if (!force && ((progress === 0 && lastProgress === 0) || (progress === 1 && lastProgress === 1))) {
-			return;
-		}
-		lastProgress = progress;
+	// Отрисовка положения сердечка по нормализованному прогрессу (0..1)
+	function renderHeart(p: number) {
+		if (!heartBadgeEl || cachedPoints.length === 0 || trackWidth === 0 || trackHeight === 0) return;
 
 		const samples = cachedPoints.length - 1;
-		const exactIndex = progress * samples;
+		const exactIndex = p * samples;
 		const i0 = Math.floor(exactIndex);
 		const i1 = Math.min(samples, i0 + 1);
 		const t = exactIndex - i0;
@@ -105,6 +90,74 @@
 		heartBadgeEl.style.transform = `translate3d(${px.toFixed(1)}px, ${py.toFixed(1)}px, 0) translate(-50%, -50%) rotate(${angle.toFixed(1)}deg)`;
 	}
 
+	// Плавная интерполяция к целевой позиции с адаптацией под частоту экрана (60Hz / 120Hz ProMotion)
+	function tick(timestamp: number) {
+		if (!lastTimestamp) lastTimestamp = timestamp;
+		const dt = Math.min(48, Math.max(1, timestamp - lastTimestamp));
+		lastTimestamp = timestamp;
+
+		const diff = targetProgress - currentProgress;
+
+		// Когда расстояние меньше 0.0005, мгновенно причаливаем и выключаем анимацию
+		if (Math.abs(diff) < 0.0005) {
+			currentProgress = targetProgress;
+			renderHeart(currentProgress);
+			rafId = null;
+			lastTimestamp = 0;
+			return;
+		}
+
+		// Экспоненциальное затухание (lambda = 20):
+		// - при медленном скролле: неотрывно следует за пальцем без видимого отставания
+		// - при быстром скролле/свайпе: сердечко быстро и грациозно скользит по изгибам кривой вместо телепортации
+		const factor = 1 - Math.exp((-20 * dt) / 1000);
+		currentProgress += diff * factor;
+
+		renderHeart(currentProgress);
+
+		rafId = requestAnimationFrame(tick);
+	}
+
+	function startGlide() {
+		if (rafId === null) {
+			lastTimestamp = performance.now();
+			rafId = requestAnimationFrame(tick);
+		}
+	}
+
+	// Расчёт целевой позиции сердечка от текущего скролла
+	function updateTarget() {
+		if (!sectionEl) return;
+		const rect = sectionEl.getBoundingClientRect();
+		const vh = window.innerHeight;
+
+		// Сердечко начинает движение, когда верх секции входит в нижнюю четверть экрана
+		const start = vh * 0.75;
+		// Завершает путь, когда нижняя часть секции приближается к центру экрана
+		const end = -(rect.height - vh * 0.5);
+		const travel = start - end;
+		const current = start - rect.top;
+
+		const newTarget = Math.max(0, Math.min(1, current / Math.max(1, travel)));
+
+		// При первом запуске сразу позиционируем сердечко без задержек
+		if (!isInitialized) {
+			targetProgress = newTarget;
+			currentProgress = newTarget;
+			isInitialized = true;
+			renderHeart(currentProgress);
+			return;
+		}
+
+		// Если позиция за пределами секции (0 или 1) и не менялась, и анимация не идёт — ничего не делаем
+		if (newTarget === targetProgress && rafId === null) {
+			return;
+		}
+
+		targetProgress = newTarget;
+		startGlide();
+	}
+
 	$effect(() => {
 		// При изменении количества пунктов или траектории перестраиваем кэш
 		pathD;
@@ -112,36 +165,29 @@
 		requestAnimationFrame(() => {
 			buildPathCache();
 			updateTrackDimensions();
-			updateHeart(true);
+			renderHeart(currentProgress);
 		});
 	});
 
 	onMount(() => {
 		buildPathCache();
 		updateTrackDimensions();
-		updateHeart(true);
+		updateTarget();
 
 		// Повторный замер после стабилизации шрифтов и сетки
 		requestAnimationFrame(() => {
 			buildPathCache();
 			updateTrackDimensions();
-			updateHeart(true);
+			updateTarget();
 		});
 
-		let ticking = false;
 		const onScroll = () => {
-			if (!ticking) {
-				requestAnimationFrame(() => {
-					updateHeart();
-					ticking = false;
-				});
-				ticking = true;
-			}
+			updateTarget();
 		};
 
 		const onResize = () => {
 			updateTrackDimensions();
-			updateHeart(true);
+			renderHeart(currentProgress);
 		};
 
 		// ResizeObserver отслеживает ТОЛЬКО размеры трека без тяжелых расчетов SVG
@@ -149,7 +195,7 @@
 		if (typeof ResizeObserver !== 'undefined' && trackEl) {
 			ro = new ResizeObserver(() => {
 				updateTrackDimensions();
-				updateHeart(true);
+				renderHeart(currentProgress);
 			});
 			ro.observe(trackEl);
 		}
@@ -159,6 +205,10 @@
 		window.addEventListener('orientationchange', onResize, { passive: true });
 
 		return () => {
+			if (rafId !== null) {
+				cancelAnimationFrame(rafId);
+				rafId = null;
+			}
 			ro?.disconnect();
 			window.removeEventListener('scroll', onScroll);
 			window.removeEventListener('resize', onResize);
