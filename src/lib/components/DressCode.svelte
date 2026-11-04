@@ -31,7 +31,6 @@
 			<Reveal kind="right" delay={120} class="dress__palette-wrap">
 				<div class="dress__palette-head">
 					<span class="tiny muted">{pick(content.dressCode.eyebrow)}</span>
-					<span class="tiny muted">17.12.26</span>
 				</div>
 
 				<div class="dress__palette">
@@ -44,11 +43,6 @@
 							</div>
 						</div>
 					{/each}
-				</div>
-
-				<div class="dress__palette-foot">
-					<span class="dress__line"></span>
-					<span class="tiny muted">Алина & Камиль</span>
 				</div>
 			</Reveal>
 		</div>
@@ -105,15 +99,11 @@
 		background: var(--paper-2);
 	}
 
-	.dress__palette-head,
-	.dress__palette-foot {
+	.dress__palette-head {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		gap: 18px;
-	}
-
-	.dress__palette-head {
 		padding-bottom: 18px;
 		border-bottom: 1px solid var(--line);
 	}
@@ -161,16 +151,6 @@
 		color: var(--ink-faint);
 	}
 
-	.dress__palette-foot {
-		padding-top: 16px;
-		border-top: 1px solid var(--line);
-	}
-
-	.dress__line {
-		flex: 1;
-		height: 1px;
-		background: var(--line);
-	}
 
 	@media (max-width: 900px) {
 		.dress__grid {

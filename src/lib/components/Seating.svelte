@@ -93,7 +93,7 @@
 					<div class="plan" aria-label="Схема зала">
 						<div class="plan__topline">
 							<span class="tiny muted">{pick(content.details.venue)}</span>
-							<span class="tiny muted">17 · 12 · 2026</span>
+							<span class="tiny muted">{pick(content.seating.eyebrow)}</span>
 						</div>
 
 						<div class="plan__stage">{pick(content.seating.stage)}</div>

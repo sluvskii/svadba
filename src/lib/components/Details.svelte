@@ -165,7 +165,7 @@
 				</svg>
 
 				<div class="details__map-info">
-					<span class="details__map-kicker">17 · 12 · 2026</span>
+					<span class="details__map-kicker">{pick(content.details.venueEyebrow)}</span>
 					<strong>{pick(content.details.venue)}</strong>
 					<span>{pick(content.details.address)}</span>
 				</div>

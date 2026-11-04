@@ -27,7 +27,6 @@
 					<Monogram size={86} />
 				</div>
 
-				<p class="rsvp__kicker">Алина & Камиль · 17.12.2026</p>
 				<h3 class="rsvp__card-title">{pick(content.invitation.eyebrow)}</h3>
 				<p class="rsvp__card-text">
 					{pick(content.rsvp.intro)}
@@ -125,13 +124,6 @@
 		padding: 10px;
 		background: var(--paper);
 		border-radius: 50%;
-	}
-
-	.rsvp__kicker {
-		font-size: 8px;
-		font-weight: 700;
-		letter-spacing: 0.26em;
-		color: var(--brass);
 	}
 
 	.rsvp__card-title {

@@ -20,8 +20,7 @@
 		</div>
 
 		<div class="footer__bottom">
-			<span>17 · 12 · 2026</span>
-			<span class="footer__mark">А & К</span>
+			<span>© 2026</span>
 			<a href="#top">{pick(content.footer.top)} ↑</a>
 		</div>
 	</div>
@@ -115,15 +114,6 @@
 		color: rgba(247, 242, 233, 0.42);
 	}
 
-	.footer__mark {
-		font-family: var(--serif);
-		font-size: 13px;
-		font-weight: 400;
-		letter-spacing: 0.06em;
-		text-transform: none;
-		color: rgba(247, 242, 233, 0.7);
-	}
-
 	.footer__bottom a {
 		transition: color 0.25s var(--ease);
 	}
@@ -134,14 +124,7 @@
 
 	@media (max-width: 520px) {
 		.footer__bottom {
-			flex-wrap: wrap;
-			justify-content: center;
-		}
-
-		.footer__mark {
-			order: -1;
-			width: 100%;
-			text-align: center;
+			justify-content: space-between;
 		}
 	}
 </style>

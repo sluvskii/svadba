@@ -71,7 +71,6 @@
 				<div class="hero__seal">
 					<Monogram size={92} />
 				</div>
-				<span class="hero__side-date" aria-hidden="true">17 · 12 · 2026</span>
 			</div>
 		</Reveal>
 	</div>
@@ -287,19 +286,6 @@
 		border-radius: 50%;
 	}
 
-	.hero__side-date {
-		position: absolute;
-		right: -38px;
-		top: 50%;
-		transform: translateY(-50%) rotate(180deg);
-		writing-mode: vertical-rl;
-		font-size: 8px;
-		font-weight: 700;
-		letter-spacing: 0.3em;
-		text-transform: uppercase;
-		color: var(--ink-soft);
-	}
-
 	.hero__bottom {
 		position: relative;
 		z-index: 1;
@@ -384,10 +370,6 @@
 			width: min(100%, 400px);
 		}
 
-		.hero__side-date {
-			right: -28px;
-		}
-
 		.hero__bottom {
 			margin-top: 0;
 		}
@@ -432,10 +414,6 @@
 			left: -22px;
 			bottom: 34px;
 			padding: 8px;
-		}
-
-		.hero__side-date {
-			display: none;
 		}
 
 		.hero__photo {

@@ -45,10 +45,7 @@
 	<div class="header__inner shell">
 		<a class="brand" href="/" onclick={closeMenu} aria-label="Алина и Камиль — на главную">
 			<Monogram size={38} />
-			<span class="brand__text">
-				<span class="brand__names">Алина & Камиль</span>
-				<span class="brand__date">17 · 12 · 2026</span>
-			</span>
+			<span class="brand__names">Алина & Камиль</span>
 		</a>
 
 		<nav class="nav" aria-label="Основная навигация">
@@ -178,24 +175,11 @@
 		flex: 0 0 auto;
 	}
 
-	.brand__text {
-		display: flex;
-		flex-direction: column;
-		gap: 1px;
-	}
-
 	.brand__names {
 		font-family: var(--serif);
-		font-size: 17px;
+		font-size: 18px;
 		line-height: 1.1;
-		letter-spacing: 0.01em;
-	}
-
-	.brand__date {
-		font-size: 7px;
-		font-weight: 650;
-		letter-spacing: 0.24em;
-		color: var(--ink-soft);
+		letter-spacing: 0.02em;
 	}
 
 	.nav {
@@ -417,7 +401,7 @@
 			min-height: 68px;
 		}
 
-		.brand__text {
+		.brand__names {
 			display: none;
 		}
 

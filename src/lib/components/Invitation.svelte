@@ -10,7 +10,6 @@
 		<div class="invitation__top">
 			<span class="invitation__index">01</span>
 			<Ornament variant="divider" class="invitation__ornament" />
-			<span class="invitation__index">17.12.26</span>
 		</div>
 
 		<div class="invitation__grid">
@@ -36,7 +35,6 @@
 						<Ornament variant="flower" class="invitation__flower" />
 						<div>
 							<p class="invitation__signature-text">{pick(content.invitation.signature)}</p>
-							<p class="tiny muted">{pick(content.invitation.note)}</p>
 						</div>
 					</div>
 				</Reveal>
