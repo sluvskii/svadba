@@ -256,8 +256,8 @@
 		align-items: center;
 		justify-content: center;
 		min-height: 40px;
-		padding: 0 22px;
-		border-radius: var(--radius-pill);
+		padding: 0 20px;
+		border-radius: 0;
 		border: 1px solid var(--pine);
 		background: var(--pine);
 		color: #ffffff;
@@ -265,19 +265,14 @@
 		font-weight: 700;
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
-		box-shadow: 0 2px 10px rgba(27, 48, 37, 0.15);
 		transition:
 			background-color 0.3s var(--ease),
-			border-color 0.3s var(--ease),
-			transform 0.3s var(--ease),
-			box-shadow 0.3s var(--ease);
+			border-color 0.3s var(--ease);
 	}
 
 	.header__cta:hover {
 		background: var(--ink);
 		border-color: var(--ink);
-		transform: translateY(-2px);
-		box-shadow: 0 6px 18px rgba(25, 30, 27, 0.2);
 	}
 
 	.burger {

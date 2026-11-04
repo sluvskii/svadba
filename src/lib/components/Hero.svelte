@@ -300,35 +300,30 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 12px;
-		padding: 12px 22px;
-		border-radius: var(--radius-pill);
-		background: rgba(255, 255, 255, 0.88);
-		backdrop-filter: blur(12px);
-		-webkit-backdrop-filter: blur(12px);
-		border: 1px solid rgba(25, 30, 27, 0.08);
-		box-shadow: 0 4px 18px -2px rgba(25, 30, 27, 0.04);
-		font-size: 9px;
+		padding: 10px 18px;
+		border-radius: 0;
+		background: transparent;
+		border: 1px solid var(--line);
+		font-size: 8px;
 		font-weight: 700;
-		letter-spacing: 0.2em;
+		letter-spacing: 0.24em;
 		text-transform: uppercase;
-		color: var(--ink);
+		color: var(--ink-soft);
 		transition:
-			transform 0.35s var(--ease),
-			box-shadow 0.35s var(--ease),
-			background-color 0.35s var(--ease),
-			border-color 0.35s var(--ease);
+			color 0.3s var(--ease),
+			border-color 0.3s var(--ease),
+			background-color 0.3s var(--ease);
 	}
 
 	.hero__scroll:hover {
-		transform: translateY(-2px);
+		color: var(--ink);
 		background: #ffffff;
-		box-shadow: 0 10px 24px -4px rgba(25, 30, 27, 0.1);
-		border-color: rgba(27, 48, 37, 0.2);
+		border-color: var(--line-strong);
 	}
 
 	.hero__scroll svg {
-		width: 13px;
-		height: 20px;
+		width: 12px;
+		height: 18px;
 		color: var(--pine);
 		animation: scroll-bob 2.2s ease-in-out infinite;
 	}

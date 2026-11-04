@@ -226,8 +226,8 @@
 		text-align: center;
 		background: var(--pine);
 		color: var(--paper);
-		border-radius: 18px;
-		box-shadow: 0 24px 60px -32px rgba(29, 51, 42, 0.55);
+		border-radius: 0;
+		border: 1px solid var(--pine);
 	}
 
 	.invite__table-card .tiny {
@@ -255,10 +255,7 @@
 		padding: clamp(26px, 4.5vw, 48px);
 		background: #ffffff;
 		border: 1px solid var(--line);
-		border-radius: 20px;
-		box-shadow:
-			0 24px 60px -30px rgba(29, 51, 42, 0.18),
-			0 4px 16px rgba(29, 51, 42, 0.03);
+		border-radius: 0;
 	}
 
 	.invite__form-title {
@@ -330,7 +327,7 @@
 
 		.invite__table-card,
 		.invite__form-card {
-			border-radius: 18px;
+			border-radius: 0;
 		}
 	}
 </style>

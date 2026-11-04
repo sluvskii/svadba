@@ -37,10 +37,10 @@
 	--max: 1240px;
 	--gutter: clamp(20px, 5vw, 64px);
 	--section-y: clamp(80px, 11vw, 150px);
-	--radius-sm: 8px;
-	--radius: 16px;
-	--radius-lg: 24px;
-	--radius-pill: 9999px;
+	--radius: 0px;
+	--radius-sm: 0px;
+	--radius-lg: 0px;
+	--radius-pill: 0px;
 	--ease: cubic-bezier(0.16, 1, 0.3, 1);
 	--shadow-subtle: 0 4px 20px -2px rgba(25, 30, 27, 0.04);
 	--shadow-card: 0 12px 36px -6px rgba(25, 30, 27, 0.07);
@@ -323,42 +323,37 @@ button {
 	justify-content: center;
 	gap: 12px;
 	min-height: 52px;
-	padding: 0 30px;
-	border-radius: var(--radius-pill);
+	padding: 0 32px;
+	border-radius: 0;
 	border: 1px solid var(--pine);
 	background: var(--pine);
 	color: #ffffff;
 	font-size: 10px;
 	font-weight: 700;
-	letter-spacing: 0.18em;
+	letter-spacing: 0.22em;
 	text-transform: uppercase;
 	text-align: center;
-	box-shadow: 0 4px 16px -2px rgba(27, 48, 37, 0.16);
+	box-shadow: none;
 	transition:
 		background-color 0.3s var(--ease),
 		border-color 0.3s var(--ease),
-		color 0.3s var(--ease),
-		transform 0.3s var(--ease),
-		box-shadow 0.3s var(--ease);
+		color 0.3s var(--ease);
 }
 
 .btn:hover {
 	background: var(--ink);
 	border-color: var(--ink);
 	color: #ffffff;
-	transform: translateY(-2px);
-	box-shadow: 0 10px 24px -4px rgba(25, 30, 27, 0.22);
 }
 
 .btn:active {
-	transform: translateY(0);
-	box-shadow: 0 2px 8px -1px rgba(25, 30, 27, 0.2);
+	background: var(--pine-deep);
 }
 
 .btn--outline {
 	background: transparent;
 	color: var(--pine);
-	border: 1px solid rgba(27, 48, 37, 0.24);
+	border: 1px solid var(--pine);
 	box-shadow: none;
 }
 
@@ -366,8 +361,6 @@ button {
 	background: var(--pine);
 	border-color: var(--pine);
 	color: #ffffff;
-	transform: translateY(-2px);
-	box-shadow: 0 10px 24px -4px rgba(27, 48, 37, 0.18);
 }
 
 .btn--ghost {

@@ -108,29 +108,19 @@
 		width: min(100%, 420px);
 		padding: 68px 38px 36px;
 		border: 1px solid var(--line);
-		border-radius: var(--radius-lg);
+		border-radius: 0;
 		background: #ffffff;
 		color: var(--ink);
 		text-align: center;
-		box-shadow: var(--shadow-card);
-		transition:
-			transform 0.4s var(--ease),
-			box-shadow 0.4s var(--ease),
-			border-color 0.4s var(--ease);
-	}
-
-	.rsvp__card:hover {
-		transform: translateY(-4px);
-		box-shadow: var(--shadow-float);
-		border-color: rgba(27, 48, 37, 0.18);
+		box-shadow: none;
 	}
 
 	.rsvp__card::before {
 		content: '';
 		position: absolute;
-		inset: 12px;
-		border: 1px solid rgba(25, 30, 27, 0.05);
-		border-radius: var(--radius);
+		inset: 10px;
+		border: 1px solid var(--line);
+		border-radius: 0;
 		pointer-events: none;
 	}
 

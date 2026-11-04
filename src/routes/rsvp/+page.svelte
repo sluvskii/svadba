@@ -160,8 +160,8 @@
 		padding: clamp(28px, 5vw, 52px);
 		background: rgba(255, 253, 248, 0.92);
 		border: 1px solid var(--line);
-		border-radius: 22px;
-		box-shadow: 0 30px 70px -46px rgba(29, 51, 42, 0.4);
+		border-radius: 0;
+		box-shadow: none;
 	}
 
 	.find__kicker {
@@ -207,7 +207,7 @@
 		max-width: 44ch;
 		padding: 12px 16px;
 		border: 1px solid #f8b4b4;
-		border-radius: 10px;
+		border-radius: 0;
 		background: #fff5f5;
 		color: #9b1c1c;
 		font-size: 13px;
@@ -222,7 +222,7 @@
 
 	@media (max-width: 520px) {
 		.find__card {
-			border-radius: 16px;
+			border-radius: 0;
 			padding: 24px 20px;
 		}
 	}

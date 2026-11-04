@@ -421,7 +421,7 @@
 		font-size: 7px;
 		font-weight: 700;
 		letter-spacing: 0.04em;
-		border-radius: 999px;
+		border-radius: 0;
 	}
 
 	.plan__table.is-active .plan__table-count {
@@ -653,7 +653,7 @@
 		padding: 50px 24px;
 		background: var(--paper);
 		border: 1px solid var(--border);
-		border-radius: var(--radius-lg, 12px);
+		border-radius: 0;
 		max-width: 600px;
 		margin: 20px auto 0;
 	}
