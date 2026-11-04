@@ -57,6 +57,7 @@ html {
 	-webkit-text-size-adjust: 100%;
 	scroll-behavior: smooth;
 	scroll-padding-top: 88px;
+	overflow-x: hidden;
 }
 
 body {
@@ -873,5 +874,11 @@ button {
 
 	.link-line {
 		font-size: 10px;
+	}
+
+	.input,
+	.textarea,
+	.select {
+		font-size: 16px;
 	}
 }

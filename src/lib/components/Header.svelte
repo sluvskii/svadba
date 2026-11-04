@@ -308,6 +308,8 @@
 		display: flex;
 		flex-direction: column;
 		background: var(--paper);
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
 	}
 
 	.mobile-menu__top {

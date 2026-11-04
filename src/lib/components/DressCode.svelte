@@ -165,22 +165,22 @@
 
 	@media (max-width: 620px) {
 		:global(.dress__palette-wrap) {
-			padding: 18px;
+			padding: 16px;
 		}
 
 		.dress__palette {
-			display: flex;
-			overflow-x: auto;
-			padding-bottom: 8px;
-			scrollbar-width: none;
-		}
-
-		.dress__palette::-webkit-scrollbar {
-			display: none;
+			display: grid;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 12px 10px;
+			padding-block: 14px;
 		}
 
 		.dress__swatch {
-			flex: 0 0 92px;
+			gap: 8px;
+		}
+
+		.dress__color {
+			aspect-ratio: 0.68;
 		}
 	}
 </style>
