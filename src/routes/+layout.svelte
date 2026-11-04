@@ -7,16 +7,12 @@
 	import '@fontsource/marck-script';
 	import '../app.css';
 	import { onMount } from 'svelte';
-	import { page } from '$app/state';
 	import { initLang } from '#lib/i18n.svelte.js';
 	import favicon from '#lib/assets/favicon.svg';
 	import ScrollProgress from '#lib/components/ScrollProgress.svelte';
-	import EnvelopeIntro from '#lib/components/EnvelopeIntro.svelte';
 	import type { LayoutProps } from './$types';
 
 	let { children }: LayoutProps = $props();
-
-	const isAdmin = $derived(page.url.pathname.startsWith('/admin'));
 
 	onMount(initLang);
 </script>
@@ -37,10 +33,6 @@
 		content="Приглашаем вас разделить с нами самый тёплый зимний день. Нефтекамск, ресторан «Тантана»."
 	/>
 </svelte:head>
-
-{#if !isAdmin}
-	<EnvelopeIntro />
-{/if}
 
 <ScrollProgress />
 <a class="skip-link" href="#main">К содержанию</a>

@@ -3,12 +3,6 @@
 	import { pick } from '#lib/i18n.svelte.js';
 	import Monogram from './Monogram.svelte';
 	import Ornament from './Ornament.svelte';
-
-	function openEnvelope() {
-		if (typeof window !== 'undefined') {
-			window.dispatchEvent(new CustomEvent('open-wedding-envelope'));
-		}
-	}
 </script>
 
 <footer class="footer">
@@ -27,9 +21,6 @@
 
 		<div class="footer__bottom">
 			<span>© 2026</span>
-			<button class="footer__envelope-btn" type="button" onclick={openEnvelope}>
-				Конверт 💌
-			</button>
 			<a href="#top">{pick(content.footer.top)} ↑</a>
 		</div>
 	</div>
@@ -126,25 +117,6 @@
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
 		color: rgba(247, 242, 233, 0.42);
-	}
-
-	.footer__envelope-btn {
-		appearance: none;
-		background: none;
-		border: 0;
-		color: rgba(247, 242, 233, 0.55);
-		font-family: inherit;
-		font-size: 8px;
-		font-weight: 650;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
-		cursor: pointer;
-		transition: color 0.25s var(--ease);
-		padding: 4px 8px;
-	}
-
-	.footer__envelope-btn:hover {
-		color: var(--paper);
 	}
 
 	.footer__bottom a {
