@@ -28,9 +28,7 @@
 	--max: 1280px;
 	--gutter: clamp(20px, 5vw, 76px);
 	--section-y: clamp(76px, 11vw, 156px);
-	--radius: 12px;
-	--radius-sm: 8px;
-	--radius-pill: 999px;
+	--radius: 0px;
 	--ease: cubic-bezier(0.22, 0.65, 0.2, 1);
 }
 
@@ -428,18 +426,16 @@ button {
 	width: 100%;
 	min-height: 52px;
 	padding: 13px 18px;
-	border: 1px solid rgba(29, 51, 42, 0.14);
+	border: 1px solid var(--line);
 	border-radius: var(--radius);
-	background: rgba(255, 255, 255, 0.85);
+	background: #ffffff;
 	color: var(--ink);
 	font-family: var(--sans);
 	font-size: 15px;
 	line-height: 1.5;
-	box-shadow: 0 1px 4px rgba(29, 51, 42, 0.03);
 	transition:
 		border-color 0.25s var(--ease),
-		background-color 0.25s var(--ease),
-		box-shadow 0.25s var(--ease);
+		background-color 0.25s var(--ease);
 }
 
 .textarea {
@@ -456,9 +452,8 @@ button {
 .textarea:focus,
 .select:focus {
 	outline: none;
-	border-color: var(--brass);
+	border-color: var(--pine);
 	background: #ffffff;
-	box-shadow: 0 0 0 3px rgba(180, 154, 99, 0.18);
 }
 
 .input[aria-invalid='true'],
@@ -491,23 +486,22 @@ button {
 	display: inline-flex;
 	align-items: center;
 	gap: 10px;
-	min-height: 44px;
-	padding: 9px 18px;
-	border: 1px solid rgba(29, 51, 42, 0.12);
-	border-radius: var(--radius-pill);
-	background: rgba(29, 51, 42, 0.03);
+	min-height: 48px;
+	padding: 11px 18px;
+	border: 1px solid var(--line);
+	border-radius: 0;
+	background: #ffffff;
 	color: var(--ink);
+	font-family: var(--sans);
 	font-size: 13px;
 	font-weight: 500;
 	line-height: 1.4;
 	cursor: pointer;
 	user-select: none;
 	transition:
-		background-color 0.25s var(--ease),
-		border-color 0.25s var(--ease),
-		color 0.25s var(--ease),
-		box-shadow 0.25s var(--ease),
-		transform 0.2s var(--ease);
+		background-color 0.2s var(--ease),
+		border-color 0.2s var(--ease),
+		color 0.2s var(--ease);
 }
 
 .choice input {
@@ -519,20 +513,18 @@ button {
 }
 
 .choice:hover {
-	border-color: var(--brass);
-	background: rgba(180, 154, 99, 0.07);
-	transform: translateY(-1px);
+	border-color: var(--line-strong);
+	background: rgba(29, 51, 42, 0.03);
 }
 
 .choice:has(input:checked) {
 	background: var(--pine);
 	border-color: var(--pine);
 	color: #ffffff;
-	box-shadow: 0 4px 14px -3px rgba(29, 51, 42, 0.35);
 }
 
 .choice:has(input:focus-visible) {
-	outline: 2px solid var(--brass);
+	outline: 1px solid var(--brass);
 	outline-offset: 2px;
 }
 
@@ -542,18 +534,17 @@ button {
 	justify-content: center;
 	width: 16px;
 	height: 16px;
-	border-radius: 50%;
-	border: 1.5px solid currentColor;
-	opacity: 0.45;
+	border: 1px solid currentColor;
+	border-radius: 0;
+	opacity: 0.6;
 	flex: 0 0 auto;
-	transition: all 0.2s var(--ease);
 }
 
 .choice__mark::after {
 	content: '';
-	width: 6px;
-	height: 6px;
-	border-radius: 50%;
+	width: 8px;
+	height: 8px;
+	border-radius: 0;
 	background: currentColor;
 	transform: scale(0);
 	transition: transform 0.2s var(--ease);
@@ -561,14 +552,13 @@ button {
 
 .choice:has(input:checked) .choice__mark {
 	opacity: 1;
-	background: #ffffff;
-	border-color: #ffffff;
-	color: var(--pine);
+	background: transparent;
+	border-color: currentColor;
 }
 
 .choice:has(input:checked) .choice__mark::after {
 	transform: scale(1);
-	background: var(--pine);
+	background: currentColor;
 }
 
 /* Big attendance cards */
@@ -579,30 +569,36 @@ button {
 	gap: 14px;
 }
 
+@media (max-width: 520px) {
+	.attendance {
+		grid-template-columns: 1fr;
+	}
+}
+
 .attendance__card {
 	position: relative;
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
 	gap: 8px;
-	min-height: 110px;
+	min-height: 112px;
 	padding: 22px 24px;
-	border: 1px solid rgba(29, 51, 42, 0.12);
-	border-radius: 16px;
-	background: rgba(29, 51, 42, 0.02);
+	border: 1px solid var(--line);
+	border-radius: 0;
+	background: #ffffff;
 	text-align: left;
 	cursor: pointer;
 	user-select: none;
 	transition:
 		background-color 0.25s var(--ease),
 		border-color 0.25s var(--ease),
-		box-shadow 0.25s var(--ease),
-		transform 0.25s var(--ease),
 		color 0.25s var(--ease);
 }
 
 .attendance__card input {
 	position: absolute;
+	width: 1px;
+	height: 1px;
 	opacity: 0;
 	pointer-events: none;
 }
@@ -621,18 +617,14 @@ button {
 }
 
 .attendance__card:hover {
-	border-color: var(--brass);
-	background: rgba(180, 154, 99, 0.04);
-	transform: translateY(-2px);
-	box-shadow: 0 8px 22px -10px rgba(29, 51, 42, 0.15);
+	border-color: var(--line-strong);
+	background: rgba(29, 51, 42, 0.02);
 }
 
 .attendance__card:has(input:checked) {
 	background: var(--pine);
 	border-color: var(--pine);
 	color: var(--paper);
-	transform: translateY(-2px);
-	box-shadow: 0 16px 34px -12px rgba(29, 51, 42, 0.45);
 }
 
 .attendance__card:has(input:checked) span {
@@ -640,7 +632,7 @@ button {
 }
 
 .attendance__card:has(input:focus-visible) {
-	outline: 2px solid var(--brass);
+	outline: 1px solid var(--brass);
 	outline-offset: 3px;
 }
 

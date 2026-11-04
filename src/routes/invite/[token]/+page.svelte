@@ -251,8 +251,8 @@
 		margin: clamp(30px, 5vh, 52px) auto 0;
 		padding: clamp(26px, 4.5vw, 48px);
 		background: #ffffff;
-		border: 1px solid rgba(29, 51, 42, 0.08);
-		border-radius: 24px;
+		border: 1px solid var(--line);
+		border-radius: 20px;
 		box-shadow:
 			0 24px 60px -30px rgba(29, 51, 42, 0.18),
 			0 4px 16px rgba(29, 51, 42, 0.03);
@@ -261,7 +261,7 @@
 	.invite__form-title {
 		text-align: center;
 		font-size: clamp(30px, 4.4vw, 44px);
-		margin: 0 0 26px;
+		margin: 0 0 clamp(24px, 4vw, 36px);
 	}
 
 	/* Программа дня */

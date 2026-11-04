@@ -98,7 +98,7 @@
 	>
 		<!-- attendance -->
 		<fieldset class="rsvp-form__group">
-			<legend class="field-label">{pick(rsvpForm.attendance)}</legend>
+			<legend class="field-label rsvp-form__legend rsvp-form__legend--attendance">{pick(rsvpForm.attendance)}</legend>
 			<div class="attendance">
 				<label class="attendance__card">
 					<input type="radio" name="attendance" value="yes" bind:group={attendance} />
@@ -121,8 +121,8 @@
 				{#if isYes}
 					<!-- drinks -->
 					<fieldset class="rsvp-form__group">
-						<legend class="field-label">{pick(rsvpForm.drinks)}</legend>
-						<p class="form-hint">{pick(rsvpForm.drinksHint)}</p>
+						<legend class="field-label rsvp-form__legend">{pick(rsvpForm.drinks)}</legend>
+						<p class="form-hint rsvp-form__hint">{pick(rsvpForm.drinksHint)}</p>
 						<div class="rsvp-form__chips">
 							{#each drinkOptions as option (option.id)}
 								<label class="choice">
@@ -187,7 +187,7 @@
 					<label class="rsvp-form__check">
 						<input type="checkbox" name="transfer" bind:checked={transfer} />
 						<span class="choice__mark" aria-hidden="true"></span>
-						<span>
+						<span class="rsvp-form__check-body">
 							<strong>{pick(rsvpForm.transfer)}</strong>
 							<small>{pick(rsvpForm.transferHint)}</small>
 						</span>
@@ -236,16 +236,25 @@
 	}
 
 	.rsvp-form__group {
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
+		display: block;
 		margin: 0;
 		padding: 0;
 		border: 0;
 	}
 
-	.rsvp-form__group legend {
-		padding: 0;
+	.rsvp-form__legend {
+		display: block;
+		width: 100%;
+		padding: 0 0 8px 0;
+		margin: 0;
+	}
+
+	.rsvp-form__legend--attendance {
+		padding: 0 0 16px 0;
+	}
+
+	.rsvp-form__hint {
+		margin: 0 0 14px 0;
 	}
 
 	.rsvp-form__rest {
@@ -261,27 +270,14 @@
 	}
 
 	.rsvp-form__check {
-		display: flex;
-		align-items: center;
-		gap: 16px;
-		padding: 16px 20px;
-		border: 1px solid rgba(29, 51, 42, 0.12);
-		border-radius: 14px;
-		background: rgba(29, 51, 42, 0.02);
+		display: inline-flex;
+		align-items: flex-start;
+		gap: 12px;
+		margin: 4px 0;
 		cursor: pointer;
 		font-size: 13px;
 		line-height: 1.5;
-		transition: all 0.25s var(--ease);
-	}
-
-	.rsvp-form__check:hover {
-		border-color: var(--brass);
-		background: rgba(180, 154, 99, 0.05);
-	}
-
-	.rsvp-form__check:has(input:checked) {
-		border-color: var(--brass);
-		background: rgba(180, 154, 99, 0.08);
+		user-select: none;
 	}
 
 	.rsvp-form__check input {
@@ -292,23 +288,31 @@
 		pointer-events: none;
 	}
 
-	.rsvp-form__check strong {
-		display: block;
-		font-weight: 650;
+	.rsvp-form__check .choice__mark {
+		margin-top: 3px;
 	}
 
-	.rsvp-form__check small {
+	.rsvp-form__check-body strong {
+		display: block;
+		font-weight: 600;
+		color: var(--ink);
+	}
+
+	.rsvp-form__check-body small {
 		display: block;
 		color: var(--ink-soft);
+		font-size: 12px;
 	}
 
 	.rsvp-form__check:has(input:checked) .choice__mark {
 		background: var(--pine);
 		border-color: var(--pine);
+		color: #ffffff;
 	}
 
 	.rsvp-form__check:has(input:checked) .choice__mark::after {
 		transform: scale(1);
+		background: currentColor;
 	}
 
 	.rsvp-form__check:has(input:focus-visible) .choice__mark {
@@ -318,15 +322,6 @@
 
 	.rsvp-form__submit {
 		width: 100%;
-		min-height: 54px;
-		border-radius: 14px;
-		box-shadow: 0 12px 28px -10px rgba(29, 51, 42, 0.4);
-		transition: all 0.25s var(--ease);
-	}
-
-	.rsvp-form__submit:hover:not([disabled]) {
-		transform: translateY(-2px);
-		box-shadow: 0 16px 36px -10px rgba(29, 51, 42, 0.5);
 	}
 
 	.rsvp-form__submit[disabled] {
