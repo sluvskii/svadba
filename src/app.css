@@ -784,19 +784,18 @@ button {
 }
 
 /* ------------------------------------------------------------------
-   Reveal animation
+   Reveal animation — аппаратное GPU-ускорение (чистый opacity и transform,
+   без тяжелого CPU Gaussian blur, который вызывал просадку FPS на iOS Safari)
 ------------------------------------------------------------------- */
 
 .js [data-reveal] {
 	opacity: 0;
-	transform: translate3d(0, 32px, 0);
-	filter: blur(4px);
+	transform: translate3d(0, 24px, 0);
 	transition:
-		opacity 0.85s var(--ease),
-		transform 0.85s var(--ease),
-		filter 0.85s var(--ease);
+		opacity 0.65s var(--ease),
+		transform 0.65s var(--ease);
 	transition-delay: var(--reveal-delay, 0ms);
-	will-change: opacity, transform, filter;
+	will-change: opacity, transform;
 }
 
 .js [data-reveal='fade'] {
@@ -804,21 +803,20 @@ button {
 }
 
 .js [data-reveal='left'] {
-	transform: translate3d(-36px, 0, 0);
+	transform: translate3d(-28px, 0, 0);
 }
 
 .js [data-reveal='right'] {
-	transform: translate3d(36px, 0, 0);
+	transform: translate3d(28px, 0, 0);
 }
 
 .js [data-reveal='scale'] {
-	transform: scale(0.96) translate3d(0, 18px, 0);
+	transform: scale(0.96) translate3d(0, 16px, 0);
 }
 
 .js [data-reveal].is-visible {
 	opacity: 1;
 	transform: none;
-	filter: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
