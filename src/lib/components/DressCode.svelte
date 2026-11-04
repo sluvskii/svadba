@@ -48,7 +48,7 @@
 
 				<div class="dress__palette-foot">
 					<span class="dress__line"></span>
-					<span class="tiny muted">Alina & Kamil</span>
+					<span class="tiny muted">Алина & Камиль</span>
 				</div>
 			</Reveal>
 		</div>

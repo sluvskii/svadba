@@ -27,7 +27,7 @@
 					<Monogram size={86} />
 				</div>
 
-				<p class="rsvp__kicker">A & K · 17.12.26</p>
+				<p class="rsvp__kicker">Алина & Камиль · 17.12.2026</p>
 				<h3 class="rsvp__card-title">{pick(content.invitation.eyebrow)}</h3>
 				<p class="rsvp__card-text">
 					{pick(content.rsvp.intro)}

@@ -6,7 +6,7 @@
 </script>
 
 <footer class="footer">
-	<div class="footer__watermark" aria-hidden="true">А&К</div>
+	<div class="footer__watermark" aria-hidden="true">А & К</div>
 
 	<div class="shell footer__inner">
 		<Ornament variant="divider" class="footer__ornament" />
