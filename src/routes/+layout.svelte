@@ -7,7 +7,8 @@
 	import '@fontsource/marck-script';
 	import '../app.css';
 	import { onMount } from 'svelte';
-	import { i18n, initLang } from '#lib/i18n.svelte.js';
+	import { content } from '#lib/content.js';
+	import { i18n, initLang, pick } from '#lib/i18n.svelte.js';
 	import favicon from '#lib/assets/favicon.svg';
 	import ScrollProgress from '#lib/components/ScrollProgress.svelte';
 	import type { LayoutProps } from './$types';
@@ -15,23 +16,22 @@
 	let { children }: LayoutProps = $props();
 
 	onMount(initLang);
+
+	const metaTitle = $derived(`${pick(content.footer.names)} — ${pick(content.wedding.dateLong)}`);
+	const metaDescription = $derived(
+		`${pick(content.hero.note)} ${pick(content.wedding.dateLong)}, ${pick(content.wedding.city)}, ${pick(content.wedding.venue)}.`
+	);
 </script>
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
-	<title>Алина и Камиль — 17 декабря 2026</title>
-	<meta
-		name="description"
-		content="Приглашаем вас разделить с нами самый тёплый зимний день. 17 декабря 2026, Нефтекамск, ресторан «Тантана»."
-	/>
+	<title>{metaTitle}</title>
+	<meta name="description" content={metaDescription} />
 	<meta name="theme-color" content="#1b3025" />
 	<meta property="og:type" content="website" />
-	<meta property="og:site_name" content="Алина и Камиль" />
-	<meta property="og:title" content="Алина и Камиль — 17 декабря 2026" />
-	<meta
-		property="og:description"
-		content="Приглашаем вас разделить с нами самый тёплый зимний день. Нефтекамск, ресторан «Тантана»."
-	/>
+	<meta property="og:site_name" content={pick(content.footer.names)} />
+	<meta property="og:title" content={metaTitle} />
+	<meta property="og:description" content={metaDescription} />
 </svelte:head>
 
 <ScrollProgress />

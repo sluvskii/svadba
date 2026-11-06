@@ -26,9 +26,12 @@ export const load: PageServerLoad = async (event) => {
 	if (tablesFromDb && tablesFromDb.length > 0) {
 		tables = tablesFromDb.map((tDb, idx) => {
 			const coords = DEFAULT_COORDS[idx % DEFAULT_COORDS.length];
+			// Стандартные названия «Стол N» показываем по-татарски, авторские — как есть.
+			const numeric = tDb.name.match(/^Стол\s+(\d+)$/i);
+			const nameTt = numeric ? `Өстәл ${numeric[1]}` : tDb.name;
 			return {
 				id: tDb.id,
-				name: t(tDb.name, tDb.name),
+				name: t(tDb.name, nameTt),
 				x: coords.x,
 				y: coords.y,
 				capacity: tDb.capacity,

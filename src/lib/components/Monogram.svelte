@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { ui } from '#lib/content.js';
+	import { pick } from '#lib/i18n.svelte.js';
+
 	type Props = {
 		size?: number;
 		light?: boolean;
@@ -17,7 +20,7 @@
 	fill="none"
 	xmlns="http://www.w3.org/2000/svg"
 	role="img"
-	aria-label="Алина и Камиль"
+	aria-label={pick(ui.brandNames)}
 >
 	<!-- Внешняя тонкая рамка печати -->
 	<circle

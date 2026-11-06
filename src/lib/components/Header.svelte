@@ -43,19 +43,19 @@
 
 <header class="header" class:header--stuck={scrolled}>
 	<div class="header__inner shell">
-		<a class="brand" href="/" onclick={closeMenu} aria-label="Алина и Камиль — на главную">
+		<a class="brand" href="/" onclick={closeMenu} aria-label={pick(ui.brandHome)}>
 			<Monogram size={38} />
-			<span class="brand__names">Алина & Камиль</span>
+			<span class="brand__names">{pick(ui.brandShort)}</span>
 		</a>
 
-		<nav class="nav" aria-label="Основная навигация">
+		<nav class="nav" aria-label={pick(ui.mainNav)}>
 			{#each content.nav as item (item.href)}
 				<a class="nav__link" href={item.href}>{pick(item.label)}</a>
 			{/each}
 		</nav>
 
 		<div class="header__actions">
-			<div class="lang" aria-label="Язык сайта">
+			<div class="lang" aria-label={pick(ui.langLabel)}>
 				<button
 					class="lang__btn"
 					class:is-active={i18n.lang === 'ru'}
@@ -101,7 +101,7 @@
 			</button>
 		</div>
 
-		<nav class="mobile-menu__nav shell" aria-label="Мобильная навигация">
+		<nav class="mobile-menu__nav shell" aria-label={pick(ui.mobileNav)}>
 			{#each content.nav as item, index (item.href)}
 				<a
 					class="mobile-menu__link"

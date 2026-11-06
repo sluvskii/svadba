@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { content, applyContentOverride } from '#lib/content.js';
+	import { content, ui, applyContentOverride } from '#lib/content.js';
 	import { i18n, pick, setLang } from '#lib/i18n.svelte.js';
 	import Monogram from '#lib/components/Monogram.svelte';
 	import Ornament from '#lib/components/Ornament.svelte';
@@ -26,7 +26,7 @@
 			<Monogram size={30} />
 			<span class="invite__brand-names">{pick(content.footer.names)}</span>
 		</a>
-		<div class="lang" aria-label="Язык сайта / Тел теле">
+		<div class="lang" aria-label={pick(ui.langLabel)}>
 			<button
 				class="lang__btn"
 				class:is-active={i18n.lang === 'ru'}

@@ -13,6 +13,10 @@
 	};
 
 	let { inviteHref = '#rsvp' }: Props = $props();
+
+	// Фото молодожёнов загружается в админке (Тексты → Фото молодожёнов).
+	// Пока его нет — показываем декоративную веточку и подпись.
+	let photoOk = $state(true);
 </script>
 
 <section class="hero" id="top">
@@ -64,8 +68,20 @@
 		<Reveal kind="right" delay={180} class="hero__visual">
 			<div class="hero__arch">
 				<div class="hero__arch-line" aria-hidden="true"></div>
-				<div class="hero__photo">
-					<Ornament variant="sprig" class="hero__sprig" />
+				<div class="hero__photo" class:hero__photo--filled={photoOk}>
+					{#if photoOk}
+						<img
+							class="hero__photo-img"
+							src="/media/couple"
+							alt={pick(content.hero.photoAlt)}
+							loading="eager"
+							decoding="async"
+							onerror={() => (photoOk = false)}
+						/>
+						<span class="hero__photo-shade" aria-hidden="true"></span>
+					{:else}
+						<Ornament variant="sprig" class="hero__sprig" />
+					{/if}
 					<span class="hero__photo-caption">{pick(content.hero.photoCaption)}</span>
 				</div>
 				<div class="hero__seal">
@@ -251,6 +267,31 @@
 		inset: 12px;
 		border: 1px solid rgba(43, 71, 58, 0.16);
 		border-radius: 999px 999px 0 0;
+		z-index: 2;
+		pointer-events: none;
+	}
+
+	.hero__photo--filled {
+		background: #d9dcd2;
+	}
+
+	.hero__photo-img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: center top;
+		z-index: 0;
+	}
+
+	.hero__photo-shade {
+		position: absolute;
+		inset: auto 0 0;
+		height: 34%;
+		background: linear-gradient(to top, rgba(18, 32, 25, 0.52), rgba(18, 32, 25, 0));
+		z-index: 1;
+		pointer-events: none;
 	}
 
 	:global(.hero__sprig) {
@@ -266,6 +307,10 @@
 		bottom: 26px;
 		left: 50%;
 		transform: translateX(-50%);
+		z-index: 3;
+		padding: 5px 12px;
+		border-radius: 999px;
+		background: rgba(247, 244, 236, 0.78);
 		font-size: 8px;
 		font-weight: 700;
 		letter-spacing: 0.26em;

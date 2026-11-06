@@ -12,23 +12,31 @@
 	// Списки редактируются локально и уходят на сервер JSON-ом при сохранении.
 	// Начальные значения data берутся один раз — это намеренно.
 	/* svelte-ignore state_referenced_locally */
-	let chapters = $state<{ title: string; text: string }[]>(data.storyChapters);
+	let chapters = $state<{ title: string; titleTt: string; text: string; textTt: string }[]>(
+		data.storyChapters
+	);
 	/* svelte-ignore state_referenced_locally */
-	let faqItems = $state<{ q: string; a: string }[]>(data.faqItems);
+	let faqItems = $state<{ q: string; qTt: string; a: string; aTt: string }[]>(data.faqItems);
 	/* svelte-ignore state_referenced_locally */
-	let courses = $state<{ label: string; title: string; text: string }[]>(data.menuCourses);
+	let courses = $state<
+		{ label: string; labelTt: string; title: string; titleTt: string; text: string; textTt: string }[]
+	>(data.menuCourses);
 	/* svelte-ignore state_referenced_locally */
 	let menuBar = $state(data.menuBar);
 	/* svelte-ignore state_referenced_locally */
+	let menuBarTt = $state(data.menuBarTt);
+	/* svelte-ignore state_referenced_locally */
 	let drinksList = $state<{ id: string; labelRu: string; labelTt?: string; alcohol: boolean }[]>(data.drinksList);
 	/* svelte-ignore state_referenced_locally */
-	let timelineItems = $state<{ time: string; title: string; text: string; icon: string }[]>(data.timelineItems);
+	let timelineItems = $state<
+		{ time: string; title: string; titleTt: string; text: string; textTt: string; icon: string }[]
+	>(data.timelineItems);
 
 	function addTimelineItem() {
 		if (timelineItems.length >= 14) return;
 		timelineItems = [
 			...timelineItems,
-			{ time: '12:00', title: '', text: '', icon: 'auto' }
+			{ time: '12:00', title: '', titleTt: '', text: '', textTt: '', icon: 'auto' }
 		];
 	}
 
@@ -37,19 +45,25 @@
 			{
 				time: '14:20',
 				title: 'Церемония регистрации',
+				titleTt: 'Тантаналы теркәү',
 				text: 'Самый волнительный момент вечера.',
+				textTt: 'Кичнең иң дулкынландыргыч мизгеле.',
 				icon: 'ceremony'
 			},
 			{
 				time: '18:00',
 				title: 'Начало банкета',
+				titleTt: 'Банкет башлануы',
 				text: 'Время за большим столом, тёплых слов и тостов.',
+				textTt: 'Зур өстәл артында җылы сүзләр һәм тостлар вакыты.',
 				icon: 'banquet'
 			},
 			{
 				time: '00:00',
 				title: 'Завершение вечера',
+				titleTt: 'Кич тәмамлануы',
 				text: 'Спасибо, что разделили с нами этот день.',
+				textTt: 'Бу көнне безнең белән бүлешкәнегез өчен рәхмәт.',
 				icon: 'night'
 			}
 		];
@@ -94,9 +108,11 @@
 
 	// После успешной загрузки/удаления фото обновляем превью и флаг.
 	let photoTs = $state(Date.now());
+	let couplePhotoTs = $state(Date.now());
 	$effect(() => {
 		if (form?.photoSuccess || form?.photoRemoved) {
 			photoTs = Date.now();
+			couplePhotoTs = Date.now();
 		}
 	});
 
@@ -123,17 +139,20 @@
 
 	function addChapter() {
 		if (chapters.length >= 8) return;
-		chapters = [...chapters, { title: '', text: '' }];
+		chapters = [...chapters, { title: '', titleTt: '', text: '', textTt: '' }];
 	}
 
 	function addFaq() {
 		if (faqItems.length >= 12) return;
-		faqItems = [...faqItems, { q: '', a: '' }];
+		faqItems = [...faqItems, { q: '', qTt: '', a: '', aTt: '' }];
 	}
 
 	function addCourse() {
 		if (courses.length >= 8) return;
-		courses = [...courses, { label: '', title: '', text: '' }];
+		courses = [
+			...courses,
+			{ label: '', labelTt: '', title: '', titleTt: '', text: '', textTt: '' }
+		];
 	}
 </script>
 
@@ -200,6 +219,56 @@
 		</div>
 	</section>
 
+	<!-- Section 0b: Couple photo -->
+	<section class="card">
+		<h2 class="card__title">💍 Фото молодожёнов</h2>
+		<p class="card__hint">
+			Главное фото на первом экране — в арочной рамке рядом с именами. Лучше подойдёт
+			вертикальный портрет, до 8 МБ (JPG, PNG, WebP).
+		</p>
+
+		<div class="photo-block">
+			{#if data.couplePhotoExists}
+				<div class="photo-preview-wrap">
+					<img
+						class="photo-preview photo-preview--portrait"
+						src="/media/couple?ts={couplePhotoTs}"
+						alt="Фото молодожёнов"
+					/>
+				</div>
+			{:else}
+				<div class="photo-empty photo-empty--portrait">Фото пока не загружено</div>
+			{/if}
+
+			<div class="photo-actions">
+				<form
+					method="POST"
+					action="?/uploadCouplePhoto"
+					enctype="multipart/form-data"
+					use:enhance={onPhotoUpload}
+				>
+					<input class="input photo-input" type="file" name="photo" accept="image/*" required />
+					<button class="btn" type="submit" disabled={uploading}>
+						{uploading ? 'Загружаем...' : 'Загрузить фото'}
+					</button>
+				</form>
+
+				{#if form?.photoError}
+					<p class="photo-error" role="alert">{form.photoError}</p>
+				{/if}
+				{#if form?.photoSuccess}
+					<p class="photo-ok" role="status">Фото загружено — обновите сайт, чтобы увидеть результат.</p>
+				{/if}
+
+				{#if data.couplePhotoExists}
+					<form method="POST" action="?/removeCouplePhoto" use:enhance={() => async ({ update }) => update()}>
+						<button class="btn btn--outline" type="submit">Удалить фото</button>
+					</form>
+				{/if}
+			</div>
+		</div>
+	</section>
+
 	<form method="POST" action="?/save" use:enhance={onSave} class="content-form">
 		<input type="hidden" name="storyJson" value={JSON.stringify(chapters)} />
 		<input type="hidden" name="faqJson" value={JSON.stringify(faqItems)} />
@@ -207,29 +276,38 @@
 		<input type="hidden" name="drinksJson" value={JSON.stringify(drinksList)} />
 		<input type="hidden" name="timelineJson" value={JSON.stringify(timelineItems)} />
 		<input type="hidden" name="menuBar" value={menuBar} />
+		<input type="hidden" name="menuBarTt" value={menuBarTt} />
 
 		<!-- Section 1: Date & Venue -->
 		<section class="card">
 			<h2 class="card__title">📅 Дата и место проведения</h2>
 			<div class="form-grid">
 				<div class="field">
-					<label class="field-label" for="dateLong">Отображаемая дата</label>
+					<label class="field-label" for="dateLong">Отображаемая дата (русский)</label>
 					<input class="input" id="dateLong" name="dateLong" value={data.current.dateLong} required />
+					<label class="field-label field-label--sub" for="dateLongTt">Татарча</label>
+					<input class="input" id="dateLongTt" name="dateLongTt" value={data.current.dateLongTt} />
 				</div>
 
 				<div class="field">
-					<label class="field-label" for="city">Город</label>
+					<label class="field-label" for="city">Город (русский)</label>
 					<input class="input" id="city" name="city" value={data.current.city} required />
+					<label class="field-label field-label--sub" for="cityTt">Татарча</label>
+					<input class="input" id="cityTt" name="cityTt" value={data.current.cityTt} />
 				</div>
 
 				<div class="field">
-					<label class="field-label" for="venue">Название площадки</label>
+					<label class="field-label" for="venue">Название площадки (русский)</label>
 					<input class="input" id="venue" name="venue" value={data.current.venue} required />
+					<label class="field-label field-label--sub" for="venueTt">Татарча</label>
+					<input class="input" id="venueTt" name="venueTt" value={data.current.venueTt} />
 				</div>
 
 				<div class="field">
-					<label class="field-label" for="address">Точный адрес</label>
+					<label class="field-label" for="address">Точный адрес (русский)</label>
 					<input class="input" id="address" name="address" value={data.current.address} required />
+					<label class="field-label field-label--sub" for="addressTt">Татарча</label>
+					<input class="input" id="addressTt" name="addressTt" value={data.current.addressTt} />
 				</div>
 
 				<div class="field full-width">
@@ -301,12 +379,16 @@
 								</select>
 							</div>
 							<div class="field full-width">
-								<label class="field-label" for="tl-title-{i}">Название события *</label>
+								<label class="field-label" for="tl-title-{i}">Название события (русский) *</label>
 								<input class="input" id="tl-title-{i}" bind:value={item.title} placeholder="Например: Церемония регистрации / Трансфер до площадки" required />
+								<label class="field-label field-label--sub" for="tl-title-tt-{i}">Татарча</label>
+								<input class="input" id="tl-title-tt-{i}" bind:value={item.titleTt} placeholder="Мәсәлән: Тантаналы теркәү" />
 							</div>
 							<div class="field full-width">
-								<label class="field-label" for="tl-text-{i}">Описание события (подсказка для гостей)</label>
+								<label class="field-label" for="tl-text-{i}">Описание события (русский)</label>
 								<input class="input" id="tl-text-{i}" bind:value={item.text} placeholder="Например: Самый волнительный момент вечера." />
+								<label class="field-label field-label--sub" for="tl-text-tt-{i}">Татарча</label>
+								<input class="input" id="tl-text-tt-{i}" bind:value={item.textTt} placeholder="Мәсәлән: Кичнең иң дулкынландыргыч мизгеле." />
 							</div>
 						</div>
 					</div>
@@ -318,18 +400,24 @@
 		<section class="card">
 			<h2 class="card__title">💌 Слова приглашения от пары</h2>
 			<div class="field" style="margin-bottom: 16px;">
-				<label class="field-label" for="invitationTitle">Заголовок обращения</label>
+				<label class="field-label" for="invitationTitle">Заголовок обращения (русский)</label>
 				<input class="input" id="invitationTitle" name="invitationTitle" value={data.current.invitationTitle} />
+				<label class="field-label field-label--sub" for="invitationTitleTt">Татарча</label>
+				<input class="input" id="invitationTitleTt" name="invitationTitleTt" value={data.current.invitationTitleTt} />
 			</div>
 
 			<div class="field" style="margin-bottom: 16px;">
-				<label class="field-label" for="invitationText">Текст приглашения (абзацы разделяйте пустой строкой)</label>
+				<label class="field-label" for="invitationText">Текст приглашения (русский, абзацы разделяйте пустой строкой)</label>
 				<textarea class="textarea" id="invitationText" name="invitationText" rows="4">{data.current.invitationText}</textarea>
+				<label class="field-label field-label--sub" for="invitationTextTt">Татарча (абзацы — так же, пустой строкой)</label>
+				<textarea class="textarea" id="invitationTextTt" name="invitationTextTt" rows="4">{data.current.invitationTextTt}</textarea>
 			</div>
 
 			<div class="field">
-				<label class="field-label" for="invitationSignature">Подпись</label>
+				<label class="field-label" for="invitationSignature">Подпись (русский)</label>
 				<input class="input" id="invitationSignature" name="invitationSignature" value={data.current.invitationSignature} />
+				<label class="field-label field-label--sub" for="invitationSignatureTt">Татарча</label>
+				<input class="input" id="invitationSignatureTt" name="invitationSignatureTt" value={data.current.invitationSignatureTt} />
 			</div>
 		</section>
 
@@ -353,12 +441,16 @@
 						>✕</button>
 					</div>
 					<div class="field" style="margin-bottom: 10px;">
-						<label class="field-label" for="chapter-title-{i}">Название главы</label>
+						<label class="field-label" for="chapter-title-{i}">Название главы (русский)</label>
 						<input class="input" id="chapter-title-{i}" bind:value={chapter.title} placeholder="Например: Первая встреча" maxlength="80" />
+						<label class="field-label field-label--sub" for="chapter-title-tt-{i}">Татарча</label>
+						<input class="input" id="chapter-title-tt-{i}" bind:value={chapter.titleTt} placeholder="Мәсәлән: Беренче очрашу" maxlength="80" />
 					</div>
 					<div class="field">
-						<label class="field-label" for="chapter-text-{i}">Рассказ</label>
+						<label class="field-label" for="chapter-text-{i}">Рассказ (русский)</label>
 						<textarea class="textarea" id="chapter-text-{i}" bind:value={chapter.text} rows="3" placeholder="Пара тёплых строк об этом моменте" maxlength="700"></textarea>
+						<label class="field-label field-label--sub" for="chapter-text-tt-{i}">Татарча</label>
+						<textarea class="textarea" id="chapter-text-tt-{i}" bind:value={chapter.textTt} rows="3" placeholder="Бу мизгел турында бер-ике җылы юл" maxlength="700"></textarea>
 					</div>
 				</div>
 			{/each}
@@ -372,18 +464,24 @@
 		<section class="card">
 			<h2 class="card__title">👗 Дресс-код</h2>
 			<div class="field" style="margin-bottom: 16px;">
-				<label class="field-label" for="dressCodeTitle">Заголовок</label>
+				<label class="field-label" for="dressCodeTitle">Заголовок (русский)</label>
 				<input class="input" id="dressCodeTitle" name="dressCodeTitle" value={data.current.dressCodeTitle} />
+				<label class="field-label field-label--sub" for="dressCodeTitleTt">Татарча</label>
+				<input class="input" id="dressCodeTitleTt" name="dressCodeTitleTt" value={data.current.dressCodeTitleTt} />
 			</div>
 
 			<div class="field" style="margin-bottom: 16px;">
-				<label class="field-label" for="dressCodeText">Описание для гостей</label>
+				<label class="field-label" for="dressCodeText">Описание для гостей (русский)</label>
 				<textarea class="textarea" id="dressCodeText" name="dressCodeText" rows="3">{data.current.dressCodeText}</textarea>
+				<label class="field-label field-label--sub" for="dressCodeTextTt">Татарча</label>
+				<textarea class="textarea" id="dressCodeTextTt" name="dressCodeTextTt" rows="3">{data.current.dressCodeTextTt}</textarea>
 			</div>
 
 			<div class="field">
-				<label class="field-label" for="dressCodeNote">Важные примечания (необязательно)</label>
+				<label class="field-label" for="dressCodeNote">Важные примечания (русский, необязательно)</label>
 				<input class="input" id="dressCodeNote" name="dressCodeNote" value={data.current.dressCodeNote} />
+				<label class="field-label field-label--sub" for="dressCodeNoteTt">Татарча</label>
+				<input class="input" id="dressCodeNoteTt" name="dressCodeNoteTt" value={data.current.dressCodeNoteTt} />
 			</div>
 		</section>
 
@@ -405,17 +503,23 @@
 					</div>
 					<div class="form-grid" style="margin-bottom: 10px;">
 						<div class="field">
-							<label class="field-label" for="course-label-{i}">Подпись</label>
+							<label class="field-label" for="course-label-{i}">Подпись (русский)</label>
 							<input class="input" id="course-label-{i}" bind:value={course.label} placeholder="Например: Приветствие" maxlength="40" />
+							<label class="field-label field-label--sub" for="course-label-tt-{i}">Татарча</label>
+							<input class="input" id="course-label-tt-{i}" bind:value={course.labelTt} placeholder="Мәсәлән: Сәламләү" maxlength="40" />
 						</div>
 						<div class="field">
-							<label class="field-label" for="course-title-{i}">Название</label>
+							<label class="field-label" for="course-title-{i}">Название (русский)</label>
 							<input class="input" id="course-title-{i}" bind:value={course.title} placeholder="Например: Свадебный торт" maxlength="80" />
+							<label class="field-label field-label--sub" for="course-title-tt-{i}">Татарча</label>
+							<input class="input" id="course-title-tt-{i}" bind:value={course.titleTt} placeholder="Мәсәлән: Туй торты" maxlength="80" />
 						</div>
 					</div>
 					<div class="field">
-						<label class="field-label" for="course-text-{i}">Описание</label>
+						<label class="field-label" for="course-text-{i}">Описание (русский)</label>
 						<textarea class="textarea" id="course-text-{i}" bind:value={course.text} rows="2" maxlength="400"></textarea>
+						<label class="field-label field-label--sub" for="course-text-tt-{i}">Татарча</label>
+						<textarea class="textarea" id="course-text-tt-{i}" bind:value={course.textTt} rows="2" maxlength="400"></textarea>
 					</div>
 				</div>
 			{/each}
@@ -425,8 +529,10 @@
 			</button>
 
 			<div class="field" style="margin-top: 18px;">
-				<label class="field-label" for="menuBar">Строка про бар / напитки</label>
+				<label class="field-label" for="menuBar">Строка про бар / напитки (русский)</label>
 				<textarea class="textarea" id="menuBar" bind:value={menuBar} rows="2" maxlength="400"></textarea>
+				<label class="field-label field-label--sub" for="menuBarTt">Татарча</label>
+				<textarea class="textarea" id="menuBarTt" bind:value={menuBarTt} rows="2" maxlength="400"></textarea>
 			</div>
 		</section>
 
@@ -447,12 +553,16 @@
 						>✕</button>
 					</div>
 					<div class="field" style="margin-bottom: 10px;">
-						<label class="field-label" for="faq-q-{i}">Вопрос</label>
+						<label class="field-label" for="faq-q-{i}">Вопрос (русский)</label>
 						<input class="input" id="faq-q-{i}" bind:value={item.q} maxlength="160" />
+						<label class="field-label field-label--sub" for="faq-q-tt-{i}">Татарча</label>
+						<input class="input" id="faq-q-tt-{i}" bind:value={item.qTt} maxlength="160" />
 					</div>
 					<div class="field">
-						<label class="field-label" for="faq-a-{i}">Ответ</label>
+						<label class="field-label" for="faq-a-{i}">Ответ (русский)</label>
 						<textarea class="textarea" id="faq-a-{i}" bind:value={item.a} rows="2" maxlength="600"></textarea>
+						<label class="field-label field-label--sub" for="faq-a-tt-{i}">Татарча</label>
+						<textarea class="textarea" id="faq-a-tt-{i}" bind:value={item.aTt} rows="2" maxlength="600"></textarea>
 					</div>
 				</div>
 			{/each}
@@ -581,6 +691,13 @@
 		color: var(--ink-muted);
 	}
 
+	/* Подпись татарского поля под русским */
+	.field-label--sub {
+		margin-top: 10px;
+		color: var(--ink-muted);
+		font-weight: 500;
+	}
+
 	.content-form {
 		display: flex;
 		flex-direction: column;
@@ -636,6 +753,15 @@
 		border-radius: 8px;
 	}
 
+	.photo-preview--portrait {
+		width: min(100%, 260px);
+		aspect-ratio: 3 / 4;
+	}
+
+	.photo-preview-wrap {
+		flex: 0 0 auto;
+	}
+
 	.photo-empty {
 		width: min(100%, 340px);
 		aspect-ratio: 3 / 2;
@@ -645,6 +771,11 @@
 		border-radius: 8px;
 		color: var(--ink-muted);
 		font-size: 0.9rem;
+	}
+
+	.photo-empty--portrait {
+		width: min(100%, 260px);
+		aspect-ratio: 3 / 4;
 	}
 
 	.photo-actions {

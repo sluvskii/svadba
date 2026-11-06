@@ -9,7 +9,7 @@
 	let photoOk = $state(true);
 
 	function addToCalendar() {
-		const title = 'Свадьба Алины и Камиля';
+		const title = pick(content.details.calendarTitle);
 		const venue = pick(content.details.venue);
 		const address = pick(content.details.address);
 		const description = `${title}\\n${venue}, ${address}`;

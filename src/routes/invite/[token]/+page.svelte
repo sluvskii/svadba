@@ -16,6 +16,14 @@
 		i18n.lang === 'tt' ? (guest.nameTt ?? guest.name) : guest.name
 	);
 	const timelineItems = $derived(content.timeline.items);
+	const tableDisplay = $derived(localizeTable(guest.table));
+
+	function localizeTable(value: string | number | null): string | null {
+		if (value === null || value === '') return null;
+		const text = String(value);
+		const match = text.match(/^(?:Стол|Өстәл)\s+(\d+)$/i);
+		return match ? `${pick(ui.table)} ${match[1]}` : text;
+	}
 </script>
 
 <svelte:head>
@@ -36,7 +44,7 @@
 			<Monogram size={30} />
 			<span class="invite__brand-names">{pick(content.footer.names)}</span>
 		</a>
-		<div class="lang" aria-label="Язык сайта / Тел теле">
+		<div class="lang" aria-label={pick(ui.langLabel)}>
 			<button
 				class="lang__btn"
 				class:is-active={i18n.lang === 'ru'}
@@ -70,10 +78,10 @@
 			</p>
 		</section>
 
-		{#if guest.table !== null}
+		{#if tableDisplay !== null}
 			<section class="invite__table-card">
 				<span class="tiny muted">{pick(ui.invite.yourTable)}</span>
-				<strong class="display invite__table-num">{guest.table}</strong>
+				<strong class="display invite__table-num">{tableDisplay}</strong>
 				<span class="invite__table-note">{pick(ui.invite.seatNote)}</span>
 			</section>
 		{/if}
