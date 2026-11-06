@@ -204,8 +204,8 @@ export const load: PageServerLoad = async (event) => {
 	if (kv) {
 		try {
 			const list = await kv.list({ prefix: 'media:' });
-			photoExists = list.keys.some((key) => key.name === 'media:restaurant');
-			couplePhotoExists = list.keys.some((key) => key.name === 'media:couple');
+			photoExists = list.keys.some((key: { name: string }) => key.name === 'media:restaurant');
+			couplePhotoExists = list.keys.some((key: { name: string }) => key.name === 'media:couple');
 		} catch {
 			photoExists = false;
 			couplePhotoExists = false;
