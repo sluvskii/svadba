@@ -16,9 +16,6 @@
 			<Reveal delay={100}>
 				<p class="lead rsvp__intro">{pick(content.rsvp.intro)}</p>
 			</Reveal>
-			<Reveal delay={180}>
-				<p class="rsvp__note">{pick(content.rsvp.note)}</p>
-			</Reveal>
 		</div>
 
 		<Reveal kind="right" delay={140} class="rsvp__card-wrap">
@@ -28,9 +25,6 @@
 				</div>
 
 				<h3 class="rsvp__card-title">{pick(content.invitation.eyebrow)}</h3>
-				<p class="rsvp__card-text">
-					{pick(content.rsvp.intro)}
-				</p>
 
 				<a class="btn rsvp__button" href="/rsvp">
 					{pick(content.rsvp.button)}
@@ -38,7 +32,6 @@
 
 				<div class="rsvp__card-foot">
 					<Ornament variant="divider" class="rsvp__ornament" />
-					<p class="tiny muted">{pick(content.rsvp.note)}</p>
 				</div>
 			</div>
 		</Reveal>
@@ -86,16 +79,6 @@
 		max-width: 44ch;
 		margin-top: 24px;
 		color: var(--ink-soft);
-	}
-
-	.rsvp__note {
-		max-width: 42ch;
-		margin-top: 24px;
-		padding-top: 20px;
-		border-top: 1px solid var(--line);
-		font-size: 13px;
-		line-height: 1.7;
-		color: var(--ink-faint);
 	}
 
 	:global(.rsvp__card-wrap) {
@@ -147,14 +130,6 @@
 		color: var(--ink);
 	}
 
-	.rsvp__card-text {
-		max-width: 32ch;
-		margin: 16px auto 0;
-		font-size: 13px;
-		line-height: 1.7;
-		color: var(--ink-soft);
-	}
-
 	.rsvp__button {
 		margin-top: 28px;
 		width: 100%;
@@ -173,14 +148,6 @@
 	:global(.rsvp__ornament) {
 		width: 100px;
 		color: var(--brass);
-	}
-
-	.rsvp__card-foot .tiny {
-		max-width: 28ch;
-		letter-spacing: 0.04em;
-		text-transform: none;
-		line-height: 1.55;
-		color: var(--ink-faint);
 	}
 
 	@media (max-width: 900px) {
