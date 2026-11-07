@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { content } from '#lib/content.js';
 	import { pick } from '#lib/i18n.svelte.js';
 	import Ornament from './Ornament.svelte';
@@ -7,6 +8,15 @@
 	// Фотография ресторана загружается через админку (Тексты → Фото ресторана).
 	// Пока фото не загружено — показываем декоративную графику.
 	let photoOk = $state(true);
+
+	// Apple-устройства: файл .ics подхватывает нативный Календарь.
+	// Всем остальным — ссылка на Google Календарь (браузер не умеет «системный вызов»).
+	let isApple = $state(false);
+	onMount(() => {
+		isApple =
+			/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+			(navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+	});
 
 	function addToCalendar() {
 		const title = pick(content.details.calendarTitle);
@@ -109,7 +119,20 @@
 								<path d="M1 8h13M9 3l5 5-5 5" stroke="currentColor" stroke-width="1.1" />
 							</svg>
 						</a>
-						<!-- Универсальный способ: Google Календарь (Android, ПК, любой браузер) -->
+					{#if isApple}
+						<!-- Apple: .ics подхватывает нативный Календарь -->
+						<button
+							type="button"
+							class="link-line details__link-item details__calendar-btn"
+							onclick={addToCalendar}
+						>
+							<span>{pick(content.details.calendarIcs)}</span>
+							<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+								<path d="M8 2v8M4 7l4 4 4-4M2 13h12" stroke="currentColor" stroke-width="1.1" />
+							</svg>
+						</button>
+					{:else}
+						<!-- Все остальные: Google Календарь (браузер не умеет системный вызов календаря) -->
 						<a
 							class="link-line details__link-item"
 							href={googleCalendarUrl}
@@ -122,20 +145,10 @@
 								<path d="M2 7h12M5 1v3M11 1v3" stroke="currentColor" stroke-width="1.1" />
 							</svg>
 						</a>
-						<!-- Для Apple Календаря и Outlook -->
-						<button
-							type="button"
-							class="link-line details__link-item details__calendar-btn"
-							onclick={addToCalendar}
-						>
-							<span>{pick(content.details.calendarIcs)}</span>
-							<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-								<path d="M8 2v8M4 7l4 4 4-4M2 13h12" stroke="currentColor" stroke-width="1.1" />
-							</svg>
-						</button>
-					</div>
-				</Reveal>
-			</div>
+					{/if}
+				</div>
+			</Reveal>
+		</div>
 		</div>
 
 		<Reveal delay={120}>
