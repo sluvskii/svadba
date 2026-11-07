@@ -32,5 +32,10 @@
 		"TELEGRAM_CHAT_ID": ""
 	},
 	"workers_dev": true,
-	"preview_urls": true
+	"preview_urls": true,
+	// Кастомный домен: сертификат выпускается Cloudflare автоматически.
+	"routes": [
+		{ "pattern": "1712svadba.ru", "custom_domain": true },
+		{ "pattern": "www.1712svadba.ru", "custom_domain": true }
+	]
 }
