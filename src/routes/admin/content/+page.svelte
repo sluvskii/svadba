@@ -137,6 +137,79 @@
 		};
 	}
 
+	// Сжатие фото в браузере: длинная сторона ≤1600px, JPEG q=0.85.
+	// Гости и мобильный интернет скажут спасибо — вместо 5 МБ уедет ~300 КБ.
+	const PHOTO_MAX_SIDE = 1600;
+
+	async function compressImage(file: File): Promise<File> {
+		// GIF не переживает перекодирование, маленькие файлы не трогаем.
+		if (file.type === 'image/gif' || file.size < 400_000) return file;
+		try {
+			const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+			const scale = Math.min(1, PHOTO_MAX_SIDE / Math.max(bitmap.width, bitmap.height));
+			if (scale === 1 && file.size < 900_000) return file;
+
+			const w = Math.max(1, Math.round(bitmap.width * scale));
+			const h = Math.max(1, Math.round(bitmap.height * scale));
+			const canvas = document.createElement('canvas');
+			canvas.width = w;
+			canvas.height = h;
+			const ctx = canvas.getContext('2d');
+			if (!ctx) return file;
+			ctx.fillStyle = '#ffffff'; // PNG с прозрачностью → белый фон под фото
+			ctx.fillRect(0, 0, w, h);
+			ctx.drawImage(bitmap, 0, 0, w, h);
+
+			const blob = await new Promise<Blob | null>((resolve) =>
+				canvas.toBlob(resolve, 'image/jpeg', 0.85)
+			);
+			if (!blob || blob.size >= file.size) return file; // сжатие не помогло — отдаём оригинал
+
+			return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
+		} catch {
+			return file; // что-то пошло не так — отправляем оригинал
+		}
+	}
+
+	let compressingRestaurant = $state(false);
+	let compressingCouple = $state(false);
+	let restaurantFile = $state<File | null>(null);
+	let coupleFile = $state<File | null>(null);
+
+	async function onPhotoSelect(event: Event, kind: 'restaurant' | 'couple') {
+		const input = event.currentTarget as HTMLInputElement;
+		const file = input.files?.[0];
+		if (!file) return;
+
+		if (kind === 'restaurant') compressingRestaurant = true;
+		else compressingCouple = true;
+
+		const compressed = await compressImage(file);
+
+		if (kind === 'restaurant') {
+			restaurantFile = compressed;
+			compressingRestaurant = false;
+		} else {
+			coupleFile = compressed;
+			compressingCouple = false;
+		}
+	}
+
+	function makePhotoEnhance(kind: 'restaurant' | 'couple') {
+		return ({ formData }: { formData: FormData }) => {
+			const compressed = kind === 'restaurant' ? restaurantFile : coupleFile;
+			if (compressed) formData.set('photo', compressed, compressed.name || 'photo.jpg');
+			uploading = true;
+			return async ({ update }: any) => {
+				await update();
+				uploading = false;
+				// после успешной загрузки сбрасываем подготовленный файл
+				if (kind === 'restaurant') restaurantFile = null;
+				else coupleFile = null;
+			};
+		};
+	}
+
 	function addChapter() {
 		if (chapters.length >= 8) return;
 		chapters = [...chapters, { title: '', titleTt: '', text: '', textTt: '' }];
@@ -180,8 +253,8 @@
 	<section class="card">
 		<h2 class="card__title">📷 Фото ресторана</h2>
 		<p class="card__hint">
-			Фотография показывается в секции «Детали» поверх тёмной плашки. Горизонтальное фото,
-			до 8 МБ (JPG, PNG, WebP).
+			Фотография показывается в секции «Детали» поверх тёмной плашки. Горизонтальное фото.
+			Любой размер — сожмём автоматически при загрузке.
 		</p>
 
 		<div class="photo-block">
@@ -196,10 +269,26 @@
 			{/if}
 
 			<div class="photo-actions">
-				<form method="POST" action="?/uploadPhoto" enctype="multipart/form-data" use:enhance={onPhotoUpload}>
-					<input class="input photo-input" type="file" name="photo" accept="image/*" required />
-					<button class="btn" type="submit" disabled={uploading}>
-						{uploading ? 'Загружаем...' : 'Загрузить фото'}
+				<form
+					method="POST"
+					action="?/uploadPhoto"
+					enctype="multipart/form-data"
+					use:enhance={makePhotoEnhance('restaurant')}
+				>
+					<input
+						class="input photo-input"
+						type="file"
+						name="photo"
+						accept="image/jpeg,image/png,image/webp,image/gif"
+						required
+						onchange={(e) => onPhotoSelect(e, 'restaurant')}
+					/>
+					<button
+						class="btn"
+						type="submit"
+						disabled={uploading || compressingRestaurant}
+					>
+						{compressingRestaurant ? 'Сжимаем...' : uploading ? 'Загружаем...' : 'Загрузить фото'}
 					</button>
 				</form>
 
@@ -224,7 +313,7 @@
 		<h2 class="card__title">💍 Фото молодожёнов</h2>
 		<p class="card__hint">
 			Главное фото на первом экране — в арочной рамке рядом с именами. Лучше подойдёт
-			вертикальный портрет, до 8 МБ (JPG, PNG, WebP).
+			вертикальный портрет. Любой размер — сожмём автоматически при загрузке.
 		</p>
 
 		<div class="photo-block">
@@ -245,11 +334,22 @@
 					method="POST"
 					action="?/uploadCouplePhoto"
 					enctype="multipart/form-data"
-					use:enhance={onPhotoUpload}
+					use:enhance={makePhotoEnhance('couple')}
 				>
-					<input class="input photo-input" type="file" name="photo" accept="image/*" required />
-					<button class="btn" type="submit" disabled={uploading}>
-						{uploading ? 'Загружаем...' : 'Загрузить фото'}
+					<input
+						class="input photo-input"
+						type="file"
+						name="photo"
+						accept="image/jpeg,image/png,image/webp,image/gif"
+						required
+						onchange={(e) => onPhotoSelect(e, 'couple')}
+					/>
+					<button
+						class="btn"
+						type="submit"
+						disabled={uploading || compressingCouple}
+					>
+						{compressingCouple ? 'Сжимаем...' : uploading ? 'Загружаем...' : 'Загрузить фото'}
 					</button>
 				</form>
 
@@ -910,9 +1010,26 @@
 			gap: 14px;
 		}
 
+		/* Превью всегда влезает в экран: по ширине и по высоте */
+		.photo-preview,
+		.photo-empty,
+		.photo-preview-wrap {
+			width: auto;
+			max-width: 100%;
+		}
+
 		.photo-preview,
 		.photo-empty {
 			width: 100%;
+			max-height: 48svh;
+			object-fit: cover;
+		}
+
+		.photo-preview--portrait,
+		.photo-empty--portrait {
+			width: min(100%, 260px);
+			max-height: 55svh;
+			margin-inline: auto;
 		}
 
 		.photo-actions form {
