@@ -9,12 +9,11 @@
 	let changingPass = $state(false);
 
 	/* svelte-ignore state_referenced_locally */
-	let botToken = $state(data.telegramBotToken);
-	/* svelte-ignore state_referenced_locally */
 	let chatId = $state(data.telegramChatId);
 
 	let showTgForm = $state(false);
-	const tgConnected = $derived(botToken.trim().length > 0 && chatId.trim().length > 0);
+	let newToken = $state('');
+	const tgConnected = $derived(data.tgConnected);
 </script>
 
 <div class="settings-page">
@@ -60,8 +59,6 @@
 						Изменить подключение
 					</button>
 					<form method="POST" action="?/testTelegram" use:enhance={() => { testingTg = true; return async ({ update }) => { await update(); testingTg = false; }; }}>
-						<input type="hidden" name="telegramBotToken" value={botToken} />
-						<input type="hidden" name="telegramChatId" value={chatId} />
 						<button class="btn btn--outline" type="submit" disabled={testingTg}>
 							{testingTg ? 'Отправляем...' : 'Отправить тестовое сообщение'}
 						</button>
@@ -92,14 +89,17 @@
 					class="form-col"
 				>
 					<div class="field">
-						<label class="field-label" for="botToken">Telegram Bot Token</label>
+						<label class="field-label" for="botToken">
+							{data.tgConnected ? 'Новый Telegram Bot Token (оставьте пустым — не менять)' : 'Telegram Bot Token'}
+						</label>
 						<input
 							class="input"
 							id="botToken"
 							name="telegramBotToken"
 							type="password"
-							bind:value={botToken}
-							placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
+							bind:value={newToken}
+							placeholder={data.tgConnected ? '••••••••••••' : '123456789:ABCdefGHIjklMNOpqrsTUVwxyz'}
+							required={!data.tgConnected}
 						/>
 					</div>
 
@@ -124,7 +124,7 @@
 							class="btn btn--outline"
 							type="submit"
 							formaction="?/testTelegram"
-							disabled={testingTg || !botToken || !chatId}
+							disabled={testingTg || (!data.tgConnected && !newToken) || !chatId}
 						>
 							{testingTg ? 'Отправляем...' : 'Сохранить и проверить'}
 						</button>

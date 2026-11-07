@@ -76,6 +76,11 @@
 	}
 
 	function exportCsv() {
+		// Защита от CSV-инъекции: нейтрализуем ячейки, начинающиеся с формульных символов.
+		const safeCell = (v: string) => {
+			const cleaned = (v ?? '').replace(/"/g, '""');
+			return /^[=+\-@\t\r]/.test(cleaned) ? `'${cleaned}` : cleaned;
+		};
 		const headers = [
 			'Имя',
 			'Сторона',
@@ -109,16 +114,16 @@
 				g.side === 'bride' ? 'Невеста' : g.side === 'groom' ? 'Жених' : 'Общие';
 
 			return [
-				`"${g.name.replace(/"/g, '""')}"`,
+				`"${safeCell(g.name)}"`,
 				`"${sideLabel}"`,
 				`"${status}"`,
-				`"${(g.rsvp?.plus_one_name || '').replace(/"/g, '""')}"`,
-				`"${(g.rsvp?.children_names || '').replace(/"/g, '""')}"`,
-				`"${(g.table_name || '').replace(/"/g, '""')}"`,
-				`"${drinks.replace(/"/g, '""')}"`,
-				`"${(g.rsvp?.food_notes || '').replace(/"/g, '""')}"`,
-				`"${(g.rsvp?.song_request || '').replace(/"/g, '""')}"`,
-				`"${(g.rsvp?.comment || '').replace(/"/g, '""')}"`,
+				`"${safeCell(g.rsvp?.plus_one_name || '')}"`,
+				`"${safeCell(g.rsvp?.children_names || '')}"`,
+				`"${safeCell(g.table_name || '')}"`,
+				`"${safeCell(drinks)}"`,
+				`"${safeCell(g.rsvp?.food_notes || '')}"`,
+				`"${safeCell(g.rsvp?.song_request || '')}"`,
+				`"${safeCell(g.rsvp?.comment || '')}"`,
 				`"${getInviteUrl(g.token)}"`
 			].join(';');
 		});

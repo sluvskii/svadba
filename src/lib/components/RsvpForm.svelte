@@ -39,6 +39,7 @@
 	let comment = $state(guest?.response?.comment ?? '');
 
 	let submitting = $state(false);
+	let submitError = $state(false);
 	/* svelte-ignore state_referenced_locally */
 	let submitted = $state(initiallySubmitted || (guest ? guest.response !== null : false));
 	let serverToken = $state<string | null>(null);
@@ -140,11 +141,17 @@
 				if (result.type === 'success' && (result.data as any)?.token) {
 					serverToken = (result.data as any).token;
 				}
-				submitted = true;
+				// Экран «Спасибо» — только при реально успешном сохранении.
+				submitError = result.type !== 'success';
+				submitted = result.type === 'success';
 			};
 		}}
 	>
 		{#if isOpen}
+			<!-- honeypot: скрытое поле для ботов, визуально отсутствует -->
+			<div class="visually-hidden" aria-hidden="true">
+				<label>Не заполняйте это поле<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+			</div>
 			<!-- name -->
 			<div class="field">
 				<label class="field-label" for="guestName">
@@ -282,8 +289,14 @@
 					{submitting ? pick(rsvpForm.submitting) : pick(rsvpForm.submit)}
 				</button>
 
+				{#if submitError}
+					<p class="form-error" role="alert">
+						{pick({ ru: 'Не получилось отправить ответ. Попробуйте ещё раз или напишите нам.', tt: 'Җавапны җибәреп булмады. Кабатлагыз яки безгә языгыз.' })}
+					</p>
+				{/if}
+
 				<p class="rsvp-form__privacy">{pick(rsvpForm.privacy)}</p>
-			</div>
+				</div>
 		{/if}
 	</form>
 {/if}

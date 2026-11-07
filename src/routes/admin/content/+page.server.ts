@@ -373,8 +373,8 @@ export const actions: Actions = {
 		if (!(file instanceof File) || file.size === 0) {
 			return fail(400, { photoError: 'Выберите файл изображения' });
 		}
-		if (!file.type.startsWith('image/')) {
-			return fail(400, { photoError: 'Нужен файл-изображение (JPG, PNG, WebP)' });
+		if (!/^image\/(jpeg|png|webp|gif)$/.test(file.type)) {
+			return fail(400, { photoError: 'Нужен файл-изображение (JPG, PNG, WebP, GIF)' });
 		}
 		if (file.size > MAX_PHOTO_BYTES) {
 			return fail(400, { photoError: 'Файл больше 8 МБ — уменьшите фотографию' });
@@ -411,8 +411,8 @@ export const actions: Actions = {
 		if (!(file instanceof File) || file.size === 0) {
 			return fail(400, { photoError: 'Выберите файл изображения' });
 		}
-		if (!file.type.startsWith('image/')) {
-			return fail(400, { photoError: 'Нужен файл-изображение (JPG, PNG, WebP)' });
+		if (!/^image\/(jpeg|png|webp|gif)$/.test(file.type)) {
+			return fail(400, { photoError: 'Нужен файл-изображение (JPG, PNG, WebP, GIF)' });
 		}
 		if (file.size > MAX_PHOTO_BYTES) {
 			return fail(400, { photoError: 'Файл больше 8 МБ — уменьшите фотографию' });

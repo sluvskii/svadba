@@ -470,11 +470,16 @@ export function applyContentOverride(ov: Record<string, unknown> | null | undefi
 		content.wedding.address = address;
 		content.details.address = address;
 	}
-	if (city) content.wedding.city = city;
+	if (city) {
+		content.wedding.city = city;
+		content.hero.city = city;
+	}
 	if (dateLong) {
 		content.wedding.dateLong = dateLong;
 		content.hero.date = dateLong;
+		content.footer.date = dateLong;
 	}
+	if (venue) content.footer.place = t(`${str('city') || contentDefaults.wedding.city.ru} · ${venue.ru}`);
 	if (mapUrl) content.wedding.mapUrl = mapUrl;
 
 	// Расписание программы вечера (блок «Как пройдёт вечер»)

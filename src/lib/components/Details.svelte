@@ -13,6 +13,11 @@
 		const venue = pick(content.details.venue);
 		const address = pick(content.details.address);
 		const description = `${title}\\n${venue}, ${address}`;
+		// Время события строится из dateISO (админка может его менять через 'dateISO'-override нет —
+		// но dateISO единый источник правды; ICS всегда совпадает с обратным отсчётом).
+		const start = new Date(content.wedding.dateISO);
+		const end = new Date(start.getTime() + 5 * 60 * 60 * 1000); // 5 часов вечера
+		const utc = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
 		const ics = [
 			'BEGIN:VCALENDAR',
 			'VERSION:2.0',
@@ -20,10 +25,10 @@
 			'CALSCALE:GREGORIAN',
 			'METHOD:PUBLISH',
 			'BEGIN:VEVENT',
-			'UID:wedding-alina-kamil-20261217@svadba',
-			'DTSTAMP:20261104T000000Z',
-			'DTSTART:20261217T090000Z',
-			'DTEND:20261217T180000Z',
+			`UID:wedding-alina-kamil-${utc(start)}@svadba`,
+			`DTSTAMP:${utc(new Date())}`,
+			`DTSTART:${utc(start)}`,
+			`DTEND:${utc(end)}`,
 			`SUMMARY:${title}`,
 			`DESCRIPTION:${description}`,
 			`LOCATION:${venue}, ${address}`,

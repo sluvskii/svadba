@@ -454,10 +454,15 @@ export async function saveSettings(
 		.run();
 }
 
-/** Заблокирован ли вход для данного IP (перебор пароля). */
-export async function isLoginBlocked(
+/** Ограничение публичной формы ответа: не более N отправок с одного IP за окно. */
+export const RSVP_HITS_PER_WINDOW = 6;
+export const RSVP_WINDOW_MINUTES = 10;
+
+/** Заблокирован ли ключ (действие+IP) — превышен ли лимит обращений за окно. */
+export async function isActionBlocked(
 	event: { platform?: App.Platform },
-	ip: string
+	key: string,
+	maxPerWindow: number
 ): Promise<boolean> {
 	const db = env(event)?.DB;
 	if (!db) return false;
@@ -466,15 +471,15 @@ export async function isLoginBlocked(
 			`SELECT count FROM login_attempts
 			 WHERE ip = ? AND window_start > datetime('now', ?)`
 		)
-		.bind(ip, `-${LOGIN_WINDOW_MINUTES} minutes`)
+		.bind(key, `-${LOGIN_WINDOW_MINUTES} minutes`)
 		.first<{ count: number }>();
-	return Boolean(row && row.count >= LOGIN_MAX_ATTEMPTS);
+	return Boolean(row && row.count >= maxPerWindow);
 }
 
-/** Зафиксировать неудачную попытку входа. */
-export async function recordLoginFailure(
+/** Зафиксировать обращение по ключу (новое окно или +1 к счётчику). */
+export async function registerActionHit(
 	event: { platform?: App.Platform },
-	ip: string
+	key: string
 ): Promise<void> {
 	const db = env(event)?.DB;
 	if (!db) return;
@@ -487,8 +492,34 @@ export async function recordLoginFailure(
 			   window_start = CASE WHEN window_start > datetime('now', '-${LOGIN_WINDOW_MINUTES} minutes')
 			                       THEN window_start ELSE datetime('now') END`
 		)
-		.bind(ip)
+		.bind(key)
 		.run();
+}
+
+/** Сбросить счётчик обращений по ключу. */
+export async function clearActionHits(
+	event: { platform?: App.Platform },
+	key: string
+): Promise<void> {
+	const db = env(event)?.DB;
+	if (!db) return;
+	await db.prepare('DELETE FROM login_attempts WHERE ip = ?').bind(key).run();
+}
+
+/** Заблокирован ли вход для данного IP (перебор пароля). */
+export async function isLoginBlocked(
+	event: { platform?: App.Platform },
+	ip: string
+): Promise<boolean> {
+	return isActionBlocked(event, `login:${ip}`, LOGIN_MAX_ATTEMPTS);
+}
+
+/** Зафиксировать неудачную попытку входа. */
+export async function recordLoginFailure(
+	event: { platform?: App.Platform },
+	ip: string
+): Promise<void> {
+	await registerActionHit(event, `login:${ip}`);
 }
 
 /** Сбросить счётчик попыток после успешного входа. */
@@ -496,7 +527,5 @@ export async function clearLoginAttempts(
 	event: { platform?: App.Platform },
 	ip: string
 ): Promise<void> {
-	const db = env(event)?.DB;
-	if (!db) return;
-	await db.prepare('DELETE FROM login_attempts WHERE ip = ?').bind(ip).run();
+	await clearActionHits(event, `login:${ip}`);
 }

@@ -34,6 +34,10 @@ export const actions: Actions = {
 				return fail(400, { error: 'Список имён пуст' });
 			}
 
+			if (names.length > 200) {
+				return fail(400, { error: 'Не более 200 гостей за раз — добавьте остальное вторым списком' });
+			}
+
 			for (const name of names) {
 				await createGuest(event, {
 					name,

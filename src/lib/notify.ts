@@ -27,6 +27,11 @@ const DRINK_NAMES: Record<string, string> = {
 	none: '🚫 Не пьет алкоголь'
 };
 
+/** Экранирование пользовательского текста для Telegram Markdown (защита от инъекций разметки). */
+function escapeMd(s: string): string {
+	return s.replace(/([*_`[])/g, '\\$1');
+}
+
 export async function notifyTelegramRsvp(
 	event: EventLike,
 	data: RsvpNotificationData
@@ -43,30 +48,30 @@ export async function notifyTelegramRsvp(
 		: 'Не указано';
 
 	let msg = `💌 *Новый ответ на приглашение!*\n\n`;
-	msg += `👤 *Гость:* ${data.guestName}\n`;
+	msg += `👤 *Гость:* ${escapeMd(data.guestName)}\n`;
 	msg += `📌 *Статус:* ${statusEmoji}\n`;
 
 	if (data.attending === 'yes') {
 		if (data.plusOneName) {
-			msg += `👥 *Спутник (+1):* ${data.plusOneName}\n`;
+			msg += `👥 *Спутник (+1):* ${escapeMd(data.plusOneName)}\n`;
 		}
 		if (data.childrenNames) {
-			msg += `👶 *Дети:* ${data.childrenNames}\n`;
+			msg += `👶 *Дети:* ${escapeMd(data.childrenNames)}\n`;
 		}
 		msg += `🥂 *Напитки:* ${drinkList}\n`;
 		if (data.foodNotes) {
-			msg += `🍽️ *Пожелания по еде:* ${data.foodNotes}\n`;
+			msg += `🍽️ *Пожелания по еде:* ${escapeMd(data.foodNotes)}\n`;
 		}
 		if (data.transferNeeded) {
 			msg += `🚗 *Трансфер:* Да, нужен\n`;
 		}
 		if (data.songRequest) {
-			msg += `🎵 *Песня:* ${data.songRequest}\n`;
+			msg += `🎵 *Песня:* ${escapeMd(data.songRequest)}\n`;
 		}
 	}
 
 	if (data.comment) {
-		msg += `💬 *Пожелание:* ${data.comment}\n`;
+		msg += `💬 *Пожелание:* ${escapeMd(data.comment)}\n`;
 	}
 
 	await sendToAllChats(token, chatId, msg);
