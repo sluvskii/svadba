@@ -13,8 +13,7 @@
 		const venue = pick(content.details.venue);
 		const address = pick(content.details.address);
 		const description = `${title}\\n${venue}, ${address}`;
-		// Время события строится из dateISO (админка может его менять через 'dateISO'-override нет —
-		// но dateISO единый источник правды; ICS всегда совпадает с обратным отсчётом).
+		// Время события строится из dateISO — ICS всегда совпадает с обратным отсчётом.
 		const start = new Date(content.wedding.dateISO);
 		const end = new Date(start.getTime() + 5 * 60 * 60 * 1000); // 5 часов вечера
 		const utc = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
@@ -47,6 +46,21 @@
 		document.body.removeChild(a);
 		URL.revokeObjectURL(url);
 	}
+
+	// Универсальное добавление через Google Календарь — работает на Android и ПК без .ics.
+	const googleCalendarUrl = (() => {
+		const start = new Date(content.wedding.dateISO);
+		const end = new Date(start.getTime() + 5 * 60 * 60 * 1000);
+		const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+		const params = new URLSearchParams({
+			action: 'TEMPLATE',
+			text: pick(content.details.calendarTitle),
+			dates: `${fmt(start)}/${fmt(end)}`,
+			details: `${pick(content.details.calendarTitle)} — ${pick(content.wedding.city)}`,
+			location: `${pick(content.details.venue)}, ${pick(content.details.address)}`
+		});
+		return `https://calendar.google.com/calendar/render?${params.toString()}`;
+	})();
 </script>
 
 <section class="section section--pine details" id="details">
@@ -95,15 +109,28 @@
 								<path d="M1 8h13M9 3l5 5-5 5" stroke="currentColor" stroke-width="1.1" />
 							</svg>
 						</a>
+						<!-- Универсальный способ: Google Календарь (Android, ПК, любой браузер) -->
+						<a
+							class="link-line details__link-item"
+							href={googleCalendarUrl}
+							target="_blank"
+							rel="noreferrer"
+						>
+							<span>{pick(content.details.calendarGoogle)}</span>
+							<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+								<rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.1" />
+								<path d="M2 7h12M5 1v3M11 1v3" stroke="currentColor" stroke-width="1.1" />
+							</svg>
+						</a>
+						<!-- Для Apple Календаря и Outlook -->
 						<button
 							type="button"
 							class="link-line details__link-item details__calendar-btn"
 							onclick={addToCalendar}
 						>
-							<span>{pick(content.details.calendarAdd)}</span>
+							<span>{pick(content.details.calendarIcs)}</span>
 							<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-								<rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.1" />
-								<path d="M2 7h12M5 1v3M11 1v3" stroke="currentColor" stroke-width="1.1" />
+								<path d="M8 2v8M4 7l4 4 4-4M2 13h12" stroke="currentColor" stroke-width="1.1" />
 							</svg>
 						</button>
 					</div>
