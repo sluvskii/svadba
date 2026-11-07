@@ -107,8 +107,11 @@ export const actions: Actions = {
 				matchedGuest =
 					guests.find((g) => {
 						const gWords = extractCoreWords(g.name);
+						// Имя без значимых слов (одна буква, инициалы) не матчится по словам —
+						// иначе пустое сравнение матчится с любым вводом (0 >= 0).
+						if (gWords.length === 0) return false;
 						const matches = inputWords.filter((w) => gWords.some((gw) => gw.includes(w) || w.includes(gw)));
-						return matches.length >= Math.min(inputWords.length, gWords.length, 2);
+						return matches.length >= Math.min(inputWords.length, gWords.length);
 					}) ?? null;
 			}
 		} catch (e) {
