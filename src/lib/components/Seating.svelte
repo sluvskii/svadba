@@ -56,12 +56,6 @@
 		highlightName = guest.name;
 	}
 
-	function clearSearch() {
-		query = '';
-		selectedId = null;
-		highlightName = '';
-	}
-
 	function isHighlighted(name: string): boolean {
 		if (!highlightName) return false;
 		return name === highlightName;
@@ -103,13 +97,6 @@
 						aria-label={pick(content.seating.searchPlaceholder)}
 						autocomplete="off"
 					/>
-					{#if query}
-						<button class="seating__clear" type="button" onclick={clearSearch} aria-label={pick(content.seating.clear)}>
-							<svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true">
-								<path d="M3 3l14 14M17 3L3 17" stroke="currentColor" stroke-width="1.2" />
-							</svg>
-						</button>
-					{/if}
 				</div>
 			</Reveal>
 
@@ -318,15 +305,6 @@
 
 	.seating__search input::placeholder {
 		color: var(--ink-faint);
-	}
-
-	.seating__clear {
-		display: grid;
-		place-items: center;
-		width: 32px;
-		height: 32px;
-		color: var(--ink-soft);
-		flex: 0 0 auto;
 	}
 
 	.seating__body {
