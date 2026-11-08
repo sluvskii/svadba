@@ -200,17 +200,35 @@
 						</div>
 
 						{#each currentTables as table (table.id)}
+							{@const chairs = Math.min(Math.max(table.capacity || 8, table.guests.length), 12)}
+							{@const taken = Math.min(table.guests.length, chairs)}
 							<button
 								type="button"
 								class="plan__table"
 								class:is-active={selectedId === table.id}
 								class:is-found={isSearching && table.guests.some((g) => g.toLowerCase().includes(normalizedQuery))}
+								class:is-empty={table.guests.length === 0}
 								style={`left: ${table.x}%; top: ${table.y}%;`}
 								onclick={() => selectTable(table.id)}
 								aria-label={`${pick(table.name)} — ${table.guests.length} ${pick(content.seating.guestsLabel)}`}
 								aria-pressed={selectedId === table.id}
 							>
-								<span class="plan__table-num">{table.id}</span>
+								<svg class="plan__table-svg" viewBox="0 0 100 100" aria-hidden="true">
+									{#each Array(chairs) as _, si}
+										{@const ang = ((si / chairs) * 360 - 90) * (Math.PI / 180)}
+										<circle
+											class="plan__seat"
+											class:is-taken={si < taken}
+											cx={50 + 36 * Math.cos(ang)}
+											cy={50 + 36 * Math.sin(ang)}
+											r={chairs > 9 ? 6 : 7.5}
+										/>
+									{/each}
+									<circle class="plan__disc" cx="50" cy="50" r="22" />
+									<text class="plan__table-num" x="50" y="51" dominant-baseline="central" text-anchor="middle">
+										{table.id}
+									</text>
+								</svg>
 								<span class="plan__table-count">{table.guests.length}</span>
 							</button>
 						{/each}
@@ -410,51 +428,122 @@
 		text-transform: uppercase;
 	}
 
+	/* Стол «вид сверху»: диск с номером + стулья по кругу.
+		Занятые стулья заполнены, свободные — контурные. */
 	.plan__table {
 		position: absolute;
-		display: grid;
-		place-items: center;
-		width: clamp(44px, 7.2vw, 66px);
-		aspect-ratio: 1;
-		border: 1px solid var(--line-strong);
+		width: clamp(64px, 10vw, 92px);
+		border: 0;
+		background: transparent;
+		padding: 0;
 		border-radius: 50%;
-		background: var(--paper-2);
-		color: var(--ink);
 		transform: translate(-50%, -50%);
-		transition:
-			background-color 0.3s var(--ease),
-			border-color 0.3s var(--ease),
-			color 0.3s var(--ease),
-			transform 0.3s var(--ease);
+		cursor: pointer;
+		transition: transform 0.3s var(--ease);
 	}
 
 	.plan__table:hover {
-		transform: translate(-50%, -50%) scale(1.06);
-		border-color: var(--pine);
+		transform: translate(-50%, -50%) scale(1.07);
+		z-index: 2;
 	}
 
-	.plan__table.is-active {
-		background: var(--pine);
-		border-color: var(--pine);
-		color: var(--paper);
+	.plan__table-svg {
+		display: block;
+		width: 100%;
+		height: auto;
+		overflow: visible;
 	}
 
-	/* Стол, где нашёлся искомый гость — латунная обводка */
-	.plan__table.is-found {
-		border-color: var(--brass);
-		box-shadow: 0 0 0 3px rgba(180, 154, 99, 0.25);
+	.plan__seat {
+		fill: transparent;
+		stroke: var(--ink-faint);
+		stroke-width: 1.6;
+		transition:
+			fill 0.3s var(--ease),
+			stroke 0.3s var(--ease);
+	}
+
+	.plan__seat.is-taken {
+		fill: var(--sage);
+		stroke: var(--pine);
+	}
+
+	.plan__disc {
+		fill: var(--paper);
+		stroke: var(--line-strong);
+		stroke-width: 2.5;
+		transition:
+			fill 0.3s var(--ease),
+			stroke 0.3s var(--ease);
+	}
+
+	.plan__table.is-empty .plan__disc {
+		stroke-dasharray: 5 4;
+	}
+
+	.plan__table:hover .plan__disc {
+		stroke: var(--pine);
+	}
+
+	.plan__table.is-active .plan__disc {
+		fill: var(--pine);
+		stroke: var(--brass);
+		stroke-width: 3.5;
+	}
+
+	.plan__table.is-active .plan__seat.is-taken {
+		fill: var(--brass-light);
+		stroke: var(--brass-light);
+	}
+
+	.plan__table.is-active .plan__seat {
+		stroke: rgba(247, 242, 233, 0.5);
 	}
 
 	.plan__table-num {
 		font-family: var(--serif);
-		font-size: clamp(20px, 2.6vw, 28px);
-		line-height: 1;
-		transform: translateY(2px);
+		font-size: 21px;
+		font-weight: 500;
+		fill: var(--ink);
+		transition: fill 0.3s var(--ease);
+	}
+
+	.plan__table.is-active .plan__table-num {
+		fill: var(--paper);
+	}
+
+	/* Стол, где нашёлся искомый гость — латунный пульс */
+	.plan__table.is-found {
+		border-radius: 50%;
+		animation: found-pulse 2.2s ease-in-out infinite;
+	}
+
+	.plan__table.is-found .plan__disc {
+		stroke: var(--brass);
+		stroke-width: 3.5;
+	}
+
+	@keyframes found-pulse {
+		0%,
+		100% {
+			box-shadow: 0 0 0 0 rgba(180, 154, 99, 0.4);
+		}
+		50% {
+			box-shadow: 0 0 0 12px rgba(180, 154, 99, 0);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.plan__table.is-found {
+			animation: none;
+		}
 	}
 
 	.plan__table-count {
 		position: absolute;
-		bottom: -7px;
+		bottom: -6px;
+		left: 50%;
+		transform: translateX(-50%);
 		display: grid;
 		place-items: center;
 		min-width: 20px;
@@ -466,7 +555,6 @@
 		font-size: 7px;
 		font-weight: 700;
 		letter-spacing: 0.04em;
-		border-radius: 0;
 	}
 
 	.plan__table.is-active .plan__table-count {
@@ -670,11 +758,7 @@
 		}
 
 		.plan__table {
-			width: 43px;
-		}
-
-		.plan__table-num {
-			font-size: 19px;
+			width: 64px;
 		}
 
 		.plan__topline {
