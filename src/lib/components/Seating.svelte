@@ -27,10 +27,12 @@
 
 	let query = $state('');
 	let selectedId = $state<number | null>(null);
+	let highlightName = $state('');
 
 	const normalizedQuery = $derived(query.trim().toLowerCase());
+	const isSearching = $derived(normalizedQuery.length >= 2);
 	const matches = $derived(
-		normalizedQuery.length >= 2
+		isSearching
 			? allGuests.filter((guest) => guest.name.toLowerCase().includes(normalizedQuery))
 			: []
 	);
@@ -40,11 +42,27 @@
 
 	function selectTable(id: number) {
 		selectedId = id;
+		highlightName = '';
+	}
+
+	function selectGuest(guest: GuestRow) {
+		selectedId = guest.table.id;
+		highlightName = guest.name;
 	}
 
 	function clearSearch() {
 		query = '';
 		selectedId = null;
+		highlightName = '';
+	}
+
+	function isHighlighted(name: string): boolean {
+		if (!highlightName) return false;
+		return name === highlightName;
+	}
+
+	function isSearched(name: string): boolean {
+		return isSearching && name.toLowerCase().includes(normalizedQuery);
 	}
 </script>
 
@@ -73,6 +91,7 @@
 						oninput={(event) => {
 							query = event.currentTarget.value;
 							selectedId = null;
+							highlightName = '';
 						}}
 						placeholder={pick(content.seating.searchPlaceholder)}
 						aria-label={pick(content.seating.searchPlaceholder)}
@@ -89,6 +108,79 @@
 			</Reveal>
 
 			<div class="seating__body">
+				<Reveal kind="right" delay={140} class="seating__panel">
+					<div class="panel__head">
+						<span class="tiny muted">{pick(content.seating.eyebrow)}</span>
+						<Ornament variant="divider" class="panel__ornament" />
+					</div>
+
+					<div class="panel__body" aria-live="polite">
+						{#if isSearching}
+							{#if matches.length}
+								<p class="panel__label">
+									{matches.length === 1
+										? pick(content.seating.yourTable)
+										: `${pick(content.seating.found)}: ${matches.length}`}
+								</p>
+								<div class="panel__results">
+									{#each matches.slice(0, 8) as guest (guest.name + guest.table.id)}
+										<button
+											class="result"
+											type="button"
+											class:is-active={selectedId === guest.table.id}
+											onclick={() => selectGuest(guest)}
+										>
+											<span class="result__name">{guest.name}</span>
+											<span class="result__table">
+												{pick(content.seating.tableLabel)} {guest.table.id}
+											</span>
+										</button>
+									{/each}
+									{#if matches.length > 8}
+										<p class="panel__subhint">
+											{pick({
+												ru: 'Показаны первые 8 совпадений — уточните имя.',
+												tt: 'Беренче 8 туры күрсәтелде — исемне төгәлләштерегез.'
+											})}
+										</p>
+									{/if}
+								</div>
+							{:else}
+								<p class="panel__hint">{pick(content.seating.notFound)}</p>
+							{/if}
+						{:else if !selectedTable}
+							<p class="panel__hint">{pick(content.seating.searchHint)}</p>
+						{/if}
+
+						{#if selectedTable}
+							<div class="panel__table">
+								<div class="panel__table-head">
+									<div>
+										<p class="panel__label">{pick(content.seating.tableLabel)}</p>
+										<h3 class="panel__table-name">{selectedTable.id}</h3>
+									</div>
+									<span class="panel__count">
+										{selectedTable.guests.length} / {selectedTable.capacity}
+										· {pick(content.seating.guestsLabel)}
+									</span>
+								</div>
+								<div class="panel__guests">
+									{#each selectedTable.guests as guest (guest)}
+										<span
+											class="guest-chip"
+											class:is-hl={isHighlighted(guest) || isSearched(guest)}
+										>
+											{guest}
+										</span>
+									{:else}
+										<span class="guest-chip guest-chip--empty">{pick(content.seating.empty)}</span>
+									{/each}
+								</div>
+							</div>
+						{/if}
+					</div>
+				</Reveal>
+
 				<Reveal kind="left" delay={100} class="seating__plan-wrap">
 					<div class="plan" aria-label={pick(content.seating.planLabel)}>
 						<div class="plan__topline">
@@ -112,6 +204,7 @@
 								type="button"
 								class="plan__table"
 								class:is-active={selectedId === table.id}
+								class:is-found={isSearching && table.guests.some((g) => g.toLowerCase().includes(normalizedQuery))}
 								style={`left: ${table.x}%; top: ${table.y}%;`}
 								onclick={() => selectTable(table.id)}
 								aria-label={`${pick(table.name)} — ${table.guests.length} ${pick(content.seating.guestsLabel)}`}
@@ -126,65 +219,6 @@
 							<span class="plan__entrance-line"></span>
 							<span>{pick(content.seating.entrance)}</span>
 						</div>
-					</div>
-				</Reveal>
-
-				<Reveal kind="right" delay={140} class="seating__panel">
-					<div class="panel__head">
-						<span class="tiny muted">{pick(content.seating.eyebrow)}</span>
-						<Ornament variant="divider" class="panel__ornament" />
-					</div>
-
-					<div class="panel__body" aria-live="polite">
-						{#if normalizedQuery.length >= 2}
-							{#if matches.length}
-								<p class="panel__label">
-									{matches.length === 1 ? pick(content.seating.yourTable) : pick(content.seating.found)}
-								</p>
-								<div class="panel__results">
-									{#each matches.slice(0, 8) as guest (guest.name + guest.table.id)}
-										<button
-											class="result"
-											type="button"
-											class:is-active={selectedId === guest.table.id}
-											onclick={() => selectTable(guest.table.id)}
-										>
-											<span class="result__name">{guest.name}</span>
-											<span class="result__table">
-												{pick(content.seating.tableLabel)} {guest.table.id}
-											</span>
-										</button>
-									{/each}
-								</div>
-							{:else}
-								<p class="panel__hint">{pick(content.seating.notFound)}</p>
-							{/if}
-						{:else if !selectedTable}
-							<p class="panel__hint">{pick(content.seating.searchHint)}</p>
-							<p class="panel__subhint">
-								{pick(content.seating.intro)}
-							</p>
-						{/if}
-
-						{#if selectedTable}
-							<div class="panel__table">
-								<div class="panel__table-head">
-									<div>
-										<p class="panel__label">{pick(content.seating.tableLabel)}</p>
-										<h3 class="panel__table-name">{selectedTable.id}</h3>
-									</div>
-									<span class="panel__count">
-										{selectedTable.guests.length}
-										{pick(content.seating.guestsLabel)}
-									</span>
-								</div>
-								<div class="panel__guests">
-									{#each selectedTable.guests as guest (guest)}
-										<span class="guest-chip">{guest}</span>
-									{/each}
-								</div>
-							</div>
-						{/if}
 					</div>
 				</Reveal>
 			</div>
@@ -400,6 +434,12 @@
 		color: var(--paper);
 	}
 
+	/* Стол, где нашёлся искомый гость — латунная обводка */
+	.plan__table.is-found {
+		border-color: var(--brass);
+		box-shadow: 0 0 0 3px rgba(180, 154, 99, 0.25);
+	}
+
 	.plan__table-num {
 		font-family: var(--serif);
 		font-size: clamp(20px, 2.6vw, 28px);
@@ -511,7 +551,7 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: 12px;
-		padding: 13px 0;
+		padding: 13px 2px;
 		border-bottom: 1px solid var(--line);
 		text-align: left;
 		transition: color 0.25s var(--ease);
@@ -581,6 +621,23 @@
 		font-size: 11px;
 		line-height: 1.4;
 		color: var(--ink-soft);
+		transition:
+			background-color 0.25s var(--ease),
+			border-color 0.25s var(--ease),
+			color 0.25s var(--ease);
+	}
+
+	/* Найденный гость подсвечен латунью */
+	.guest-chip.is-hl {
+		background: rgba(180, 154, 99, 0.14);
+		border-color: var(--brass);
+		color: var(--pine-deep);
+		font-weight: 650;
+	}
+
+	.guest-chip--empty {
+		border-style: dashed;
+		color: var(--ink-faint);
 	}
 
 	@media (max-width: 980px) {
@@ -588,8 +645,14 @@
 			grid-template-columns: minmax(0, 1fr);
 		}
 
+		/* Панель с ответом — сразу под поиском, схема ниже */
 		:global(.seating__panel) {
-			min-height: 240px;
+			order: -1;
+			min-height: 200px;
+		}
+
+		:global(.seating__plan-wrap) {
+			order: 1;
 		}
 	}
 
@@ -641,6 +704,19 @@
 
 		:global(.seating__panel) {
 			padding: 18px;
+		}
+
+		.result {
+			padding: 15px 2px;
+		}
+
+		.result__name {
+			font-size: 16px;
+		}
+
+		.guest-chip {
+			font-size: 12px;
+			padding: 7px 11px;
 		}
 	}
 
