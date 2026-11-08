@@ -990,7 +990,7 @@
 	.save-bar .btn {
 		min-width: 240px;
 		padding: 14px 30px;
-		border-radius: 10px;
+		border-radius: 0;
 		background: var(--pine);
 		color: var(--paper);
 		font-weight: 650;
