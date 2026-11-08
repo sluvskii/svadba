@@ -64,6 +64,12 @@
 	function isSearched(name: string): boolean {
 		return isSearching && name.toLowerCase().includes(normalizedQuery);
 	}
+
+	function clearSearch() {
+		query = '';
+		selectedId = null;
+		highlightName = '';
+	}
 </script>
 
 <section class="section seating" id="seating">
@@ -97,6 +103,13 @@
 						aria-label={pick(content.seating.searchPlaceholder)}
 						autocomplete="off"
 					/>
+					{#if query}
+						<button class="seating__clear" type="button" onclick={clearSearch} aria-label={pick(content.seating.clear)}>
+							<svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true">
+								<path d="M3 3l14 14M17 3L3 17" stroke="currentColor" stroke-width="1.2" />
+							</svg>
+						</button>
+					{/if}
 				</div>
 			</Reveal>
 
@@ -301,6 +314,28 @@
 
 	.seating__search input:focus {
 		outline: none;
+	}
+
+	/* Синий крестик Chrome (native cancel) — прячем, он выбивается из стиля */
+	.seating__search input::-webkit-search-cancel-button,
+	.seating__search input::-webkit-search-decoration {
+		-webkit-appearance: none;
+		appearance: none;
+	}
+
+	/* Наш крестик — тонкий, в стиле сайта */
+	.seating__clear {
+		display: grid;
+		place-items: center;
+		width: 30px;
+		height: 30px;
+		color: var(--ink-soft);
+		flex: 0 0 auto;
+		transition: color 0.2s var(--ease);
+	}
+
+	.seating__clear:hover {
+		color: var(--ink);
 	}
 
 	.seating__search input::placeholder {
