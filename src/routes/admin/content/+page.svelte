@@ -775,6 +775,8 @@
 		display: flex;
 		flex-direction: column;
 		gap: 24px;
+		/* Место под фиксированную панель сохранения */
+		padding-bottom: 84px;
 	}
 
 	.page-title {
@@ -978,16 +980,18 @@
 	}
 
 	.save-bar {
-		position: sticky;
-		bottom: 20px;
+		position: fixed;
+		left: 0;
+		right: 0;
+		bottom: 0;
 		background: var(--paper);
-		border: 1px solid var(--border);
-		border-radius: 12px;
-		padding: 16px 24px;
+		border-top: 1px solid var(--border);
+		padding: 12px 24px;
+		padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
 		display: flex;
 		justify-content: flex-end;
-		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-		z-index: 40;
+		box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.08);
+		z-index: 60;
 	}
 
 	@media (max-width: 680px) {
