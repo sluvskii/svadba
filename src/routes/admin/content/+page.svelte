@@ -775,8 +775,8 @@
 		display: flex;
 		flex-direction: column;
 		gap: 24px;
-		/* Место под фиксированную панель сохранения */
-		padding-bottom: 84px;
+		/* Место под летающую кнопку */
+		padding-bottom: 72px;
 	}
 
 	.page-title {
@@ -981,17 +981,35 @@
 
 	.save-bar {
 		position: fixed;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: var(--paper);
-		border-top: 1px solid var(--border);
-		padding: 12px 24px;
-		padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-		display: flex;
-		justify-content: flex-end;
-		box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.08);
+		left: 50%;
+		bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+		transform: translateX(-50%);
 		z-index: 60;
+	}
+
+	.save-bar .btn {
+		min-width: 240px;
+		padding: 14px 30px;
+		border-radius: 999px;
+		background: var(--pine);
+		color: var(--paper);
+		font-weight: 650;
+		box-shadow:
+			0 12px 34px -8px rgba(29, 51, 42, 0.5),
+			0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+		transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+	}
+
+	.save-bar .btn:hover {
+		transform: translateY(-2px);
+		box-shadow:
+			0 16px 40px -8px rgba(29, 51, 42, 0.55),
+			0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+	}
+
+	.save-bar .btn[disabled] {
+		transform: none;
+		opacity: 0.7;
 	}
 
 	@media (max-width: 680px) {
@@ -1071,15 +1089,10 @@
 			max-width: 100%;
 		}
 
-		.save-bar {
-			bottom: 10px;
-			padding: 10px 14px;
-			border-radius: 10px;
-		}
-
 		.save-bar .btn {
-			width: 100%;
-			min-height: 44px;
+			min-width: 0;
+			width: auto;
+			padding: 13px 26px;
 			font-size: 0.95rem;
 			justify-content: center;
 		}
