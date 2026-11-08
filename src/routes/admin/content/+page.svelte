@@ -990,21 +990,17 @@
 	.save-bar .btn {
 		min-width: 240px;
 		padding: 14px 30px;
-		border-radius: 999px;
+		border-radius: 10px;
 		background: var(--pine);
 		color: var(--paper);
 		font-weight: 650;
-		box-shadow:
-			0 12px 34px -8px rgba(29, 51, 42, 0.5),
-			0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+		box-shadow: 0 12px 34px -8px rgba(29, 51, 42, 0.5);
 		transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
 	}
 
 	.save-bar .btn:hover {
 		transform: translateY(-2px);
-		box-shadow:
-			0 16px 40px -8px rgba(29, 51, 42, 0.55),
-			0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+		box-shadow: 0 16px 40px -8px rgba(29, 51, 42, 0.55);
 	}
 
 	.save-bar .btn[disabled] {
