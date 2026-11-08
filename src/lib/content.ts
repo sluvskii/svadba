@@ -467,6 +467,18 @@ export function applyContentOverride(ov: Record<string, unknown> | null | undefi
 	if (venue) content.footer.place = t(`${str('city') || contentDefaults.wedding.city.ru} · ${venue.ru}`);
 	if (mapUrl) content.wedding.mapUrl = mapUrl;
 
+	// Большой блок даты в «Детали» (число, месяц, год, день недели, текст про сбор)
+	const detailsDay = str('detailsDay');
+	const detailsMonth = loc('detailsMonth', contentDefaults.wedding.month);
+	const detailsYear = str('detailsYear');
+	const detailsWeekday = loc('detailsWeekday', contentDefaults.details.weekday);
+	const detailsNote = loc('detailsNote', contentDefaults.details.note);
+	if (detailsDay) content.wedding.day = detailsDay;
+	if (detailsMonth) content.wedding.month = detailsMonth;
+	if (detailsYear) content.wedding.year = detailsYear;
+	if (detailsWeekday) content.details.weekday = detailsWeekday;
+	if (detailsNote) content.details.note = detailsNote;
+
 	// Расписание программы вечера (блок «Как пройдёт вечер»)
 	const timelineRaw = ov?.timeline as {
 		items?: Array<{

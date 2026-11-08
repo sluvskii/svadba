@@ -414,6 +414,37 @@
 					<label class="field-label" for="mapUrl">Ссылка на Яндекс.Карты</label>
 					<input class="input" id="mapUrl" name="mapUrl" value={data.current.mapUrl} />
 				</div>
+
+				<div class="field">
+					<label class="field-label" for="detailsDay">Большое число в блоке даты</label>
+					<input class="input" id="detailsDay" name="detailsDay" value={data.current.detailsDay} required />
+				</div>
+
+				<div class="field">
+					<label class="field-label" for="detailsYear">Год в блоке даты</label>
+					<input class="input" id="detailsYear" name="detailsYear" value={data.current.detailsYear} required />
+				</div>
+
+				<div class="field">
+					<label class="field-label" for="detailsMonth">Месяц (русский)</label>
+					<input class="input" id="detailsMonth" name="detailsMonth" value={data.current.detailsMonth} required />
+					<label class="field-label field-label--sub" for="detailsMonthTt">Татарча</label>
+					<input class="input" id="detailsMonthTt" name="detailsMonthTt" value={data.current.detailsMonthTt} />
+				</div>
+
+				<div class="field">
+					<label class="field-label" for="detailsWeekday">День недели (русский)</label>
+					<input class="input" id="detailsWeekday" name="detailsWeekday" value={data.current.detailsWeekday} required />
+					<label class="field-label field-label--sub" for="detailsWeekdayTt">Татарча</label>
+					<input class="input" id="detailsWeekdayTt" name="detailsWeekdayTt" value={data.current.detailsWeekdayTt} />
+				</div>
+
+				<div class="field full-width">
+					<label class="field-label" for="detailsNote">Текст под датой — сбор гостей (русский)</label>
+					<input class="input" id="detailsNote" name="detailsNote" value={data.current.detailsNote} required />
+					<label class="field-label field-label--sub" for="detailsNoteTt">Татарча</label>
+					<input class="input" id="detailsNoteTt" name="detailsNoteTt" value={data.current.detailsNoteTt} />
+				</div>
 			</div>
 		</section>
 

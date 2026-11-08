@@ -81,6 +81,9 @@ export const load: PageServerLoad = async (event) => {
 	const dressCodeTitle = pair(override, 'dressCodeTitle', defaultContent.dressCode.title);
 	const dressCodeText = pair(override, 'dressCodeText', defaultContent.dressCode.text);
 	const dressCodeNote = pair(override, 'dressCodeNote', defaultContent.dressCode.note);
+	const detailsMonth = pair(override, 'detailsMonth', defaultContent.wedding.month);
+	const detailsWeekday = pair(override, 'detailsWeekday', defaultContent.details.weekday);
+	const detailsNote = pair(override, 'detailsNote', defaultContent.details.note);
 
 	const invitationText = pair(
 		override,
@@ -94,6 +97,8 @@ export const load: PageServerLoad = async (event) => {
 	const current = {
 		dateLong: dateLong.ru,
 		dateLongTt: dateLong.tt,
+		currentDetailsDay: (override?.detailsDay as string) || defaultContent.wedding.day,
+		currentDetailsYear: (override?.detailsYear as string) || defaultContent.wedding.year,
 		venue: venue.ru,
 		venueTt: venue.tt,
 		city: city.ru,
@@ -101,6 +106,8 @@ export const load: PageServerLoad = async (event) => {
 		address: address.ru,
 		addressTt: address.tt,
 		mapUrl: (override?.mapUrl as string) || defaultContent.wedding.mapUrl,
+		detailsDay: (override?.detailsDay as string) || defaultContent.wedding.day,
+		detailsYear: (override?.detailsYear as string) || defaultContent.wedding.year,
 		gatheringTime: typeof override?.gatheringTime === 'string' ? override.gatheringTime : '',
 		ceremonyTime: (override?.ceremonyTime as string) || '14:20',
 		dinnerTime: (override?.dinnerTime as string) || '18:00',
@@ -116,7 +123,15 @@ export const load: PageServerLoad = async (event) => {
 		dressCodeText: dressCodeText.ru,
 		dressCodeTextTt: dressCodeText.tt,
 		dressCodeNote: dressCodeNote.ru,
-		dressCodeNoteTt: dressCodeNote.tt
+		dressCodeNoteTt: dressCodeNote.tt,
+		detailsDay: currentDetailsDay,
+		detailsMonth: detailsMonth.ru,
+		detailsMonthTt: detailsMonth.tt,
+		detailsYear: currentDetailsYear,
+		detailsWeekday: detailsWeekday.ru,
+		detailsWeekdayTt: detailsWeekday.tt,
+		detailsNote: detailsNote.ru,
+		detailsNoteTt: detailsNote.tt
 	};
 
 	const drinksList: EditableDrink[] = parseEditableDrinks(override?.drinks);
@@ -246,6 +261,14 @@ export const actions: Actions = {
 			ceremonyTime: field('ceremonyTime', 10),
 			dinnerTime: field('dinnerTime', 10),
 			endTime: field('endTime', 10),
+			detailsDay: field('detailsDay', 4),
+			detailsMonth: field('detailsMonth', 40),
+			detailsMonthTt: field('detailsMonthTt', 40),
+			detailsYear: field('detailsYear', 4),
+			detailsWeekday: field('detailsWeekday', 40),
+			detailsWeekdayTt: field('detailsWeekdayTt', 40),
+			detailsNote: field('detailsNote', 200),
+			detailsNoteTt: field('detailsNoteTt', 200),
 			invitationTitle: field('invitationTitle', 120),
 			invitationTitleTt: field('invitationTitleTt', 120),
 			invitationText: field('invitationText', 1500),
