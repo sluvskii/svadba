@@ -740,7 +740,7 @@
 		}
 
 		.plan__table {
-			width: 64px;
+			width: 76px;
 		}
 
 		.plan__topline {
