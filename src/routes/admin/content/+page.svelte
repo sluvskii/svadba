@@ -120,20 +120,15 @@
 		saving = true;
 		savedSuccess = false;
 		return async ({ update }: any) => {
-			await update();
+			// reset:false — критично: нативный form.reset() после сохранения
+			// стирал все bind:value поля (таймлайн, главы, FAQ) до пустоты,
+			// и повторное сохранение записывало пустоту в базу.
+			await update({ reset: false });
 			saving = false;
 			savedSuccess = true;
 			setTimeout(() => {
 				savedSuccess = false;
 			}, 3000);
-		};
-	}
-
-	function onPhotoUpload() {
-		uploading = true;
-		return async ({ update }: any) => {
-			await update();
-			uploading = false;
 		};
 	}
 
