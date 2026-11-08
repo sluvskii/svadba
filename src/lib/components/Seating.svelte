@@ -308,10 +308,15 @@
 
 	.seating__body {
 		display: grid;
-		grid-template-columns: minmax(0, 1.42fr) minmax(280px, 0.58fr);
+		/* Панель первая в DOM — на мобиле она сверху; на десктопе схема справа широкая */
+		grid-template-columns: minmax(280px, 0.58fr) minmax(0, 1.42fr);
 		gap: clamp(20px, 3vw, 38px);
 		align-items: stretch;
 		margin-top: 28px;
+	}
+
+	:global(.seating__panel) {
+		min-width: 0;
 	}
 
 	:global(.seating__plan-wrap) {
@@ -645,14 +650,8 @@
 			grid-template-columns: minmax(0, 1fr);
 		}
 
-		/* Панель с ответом — сразу под поиском, схема ниже */
 		:global(.seating__panel) {
-			order: -1;
 			min-height: 200px;
-		}
-
-		:global(.seating__plan-wrap) {
-			order: 1;
 		}
 	}
 
