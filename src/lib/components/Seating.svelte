@@ -43,6 +43,12 @@
 	function selectTable(id: number) {
 		selectedId = id;
 		highlightName = '';
+		// На мобиле панель с ответом выше схемы — показываем её гостю после клика.
+		if (window.innerWidth <= 980) {
+			document
+				.querySelector('.seating__panel')
+				?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		}
 	}
 
 	function selectGuest(guest: GuestRow) {
@@ -221,15 +227,14 @@
 											class:is-taken={si < taken}
 											cx={50 + 36 * Math.cos(ang)}
 											cy={50 + 36 * Math.sin(ang)}
-											r={chairs > 9 ? 6 : 7.5}
+											r={chairs > 9 ? 6.5 : 8}
 										/>
 									{/each}
-									<circle class="plan__disc" cx="50" cy="50" r="22" />
+									<circle class="plan__disc" cx="50" cy="50" r="24" />
 									<text class="plan__table-num" x="50" y="51" dominant-baseline="central" text-anchor="middle">
 										{table.id}
 									</text>
 								</svg>
-								<span class="plan__table-count">{table.guests.length}</span>
 							</button>
 						{/each}
 
@@ -432,7 +437,7 @@
 		Занятые стулья заполнены, свободные — контурные. */
 	.plan__table {
 		position: absolute;
-		width: clamp(64px, 10vw, 92px);
+		width: clamp(78px, 11.5vw, 108px);
 		border: 0;
 		background: transparent;
 		padding: 0;
@@ -501,9 +506,9 @@
 	}
 
 	.plan__table-num {
-		font-family: var(--serif);
-		font-size: 21px;
-		font-weight: 500;
+		font-family: var(--sans);
+		font-size: 22px;
+		font-weight: 600;
 		fill: var(--ink);
 		transition: fill 0.3s var(--ease);
 	}
@@ -537,29 +542,6 @@
 		.plan__table.is-found {
 			animation: none;
 		}
-	}
-
-	.plan__table-count {
-		position: absolute;
-		bottom: -6px;
-		left: 50%;
-		transform: translateX(-50%);
-		display: grid;
-		place-items: center;
-		min-width: 20px;
-		height: 16px;
-		padding: 0 4px;
-		border: 1px solid var(--line);
-		background: var(--paper);
-		color: var(--ink-soft);
-		font-size: 7px;
-		font-weight: 700;
-		letter-spacing: 0.04em;
-	}
-
-	.plan__table.is-active .plan__table-count {
-		border-color: var(--brass);
-		color: var(--pine);
 	}
 
 	.plan__entrance {
